@@ -3,119 +3,74 @@ import AppKit
 
 struct ContentView: View {
     
-    @State private var smbURL = ""
+    @State private var smbURL = "smb://192.168.68.110/Cronos"
     @State private var username = ""
     @State private var password = ""
     @State private var remember = false
     @State private var status = ""
     
     var body: some View {
-        VStack(spacing: 20.0) {
+        
+        VStack(spacing: 16) {
             
+            // 🔹 Título
             Text("NAS Mounter")
-                .font(.title2)
+                .font(.title3)
                 .fontWeight(.semibold)
-                .padding(.bottom, 0)
             
-            VStack(spacing: 15) {
+            VStack(spacing: 10) {
                 
-                // SMB input field
-                fieldRow(title: "SMB", placeholder: "smb://192.168.xx.xxx // NAS IP adress", text: $smbURL)
-                    .frame(width: 250)  // Ajustar el ancho del campo
+                inputField("SMB URL", text: $smbURL)
+                inputField("Usuario", text: $username)
                 
-                // Username input field
-                fieldRow(title: "User", placeholder: "Username", text: $username)
-                    .frame(width: 250)  // Ajustar el ancho del campo
-
-                // Password input field
-                secureRow(title: "Password", placeholder: "Password", text: $password)
-                    .frame(width: 250)  // Ajustar el ancho del campo
+                SecureField("Contraseña", text: $password)
+                    .textFieldStyle(.roundedBorder)
+                
+                Toggle("Recordar credenciales", isOn: $remember)
+                    .font(.system(size: 12))
             }
             
-            // Remember me toggle
-            Toggle("Remember in Keychain", isOn: $remember)
-                .toggleStyle(.checkbox)
-                .padding(.top, 4)
-            
-            // Mount button
+            // 🔹 Botón
             Button(action: mountNAS) {
-                Text("Mount Volume")
-                    .frame(width: 220)  // Ajustar el ancho del botón
-                    .padding(.vertical, 8)
+                Text("Conectar")
+                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(PlainButtonStyle())  // Style for more custom button appearance
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(20)
-            .padding(.top, 10)
-            .disabled(smbURL.isEmpty || username.isEmpty)
+            .buttonStyle(.borderedProminent)
             
-            // Status message
-            if !status.isEmpty {
-                Text(status)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            // 🔹 Status
+            Text(status)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 20.0)  // Reducir margen horizontal para hacerlo más compacto
-        .frame(width: 450.0, height: 300.0) // Ajustar el tamaño de la ventana
+        .padding(20)
     }
     
-    // 🔥 FUNCIÓN CORREGIDA
-    func mountNAS() {
-        
-        guard !smbURL.isEmpty, !username.isEmpty else {
-            status = "Missing required fields"
-            return
-        }
-        
-        let cleanURL = smbURL.replacingOccurrences(of: "smb://", with: "")
-        
-        // 🔥 Escapar usuario y password (CLAVE)
-        let userEncoded = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed) ?? username
-        let passEncoded = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed) ?? password
-        
-        let fullURLString = "smb://\(userEncoded):\(passEncoded)@\(cleanURL)"
-        
-        print("DEBUG URL:", fullURLString) // 👈 útil
-        
-        guard let url = URL(string: fullURLString) else {
-            status = "Invalid URL"
-            return
-        }
-        
-        NSWorkspace.shared.open(url)
-        
-        status = "Connecting..."
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            NSApplication.shared.terminate(nil)
-        }
-    }
-}
-
-// 🔹 Campo normal
-func fieldRow(title: String, placeholder: String, text: Binding<String>) -> some View {
-    HStack {
-        Text(title)
-            .frame(width: 80, alignment: .leading)
-        
+    // 🔧 Campo reutilizable
+    func inputField(_ placeholder: String, text: Binding<String>) -> some View {
         TextField(placeholder, text: text)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .textFieldStyle(.roundedBorder)
     }
-}
-
-// 🔹 Campo seguro (password)
-func secureRow(title: String, placeholder: String, text: Binding<String>) -> some View {
-    HStack {
-        Text(title)
-            .frame(width: 80, alignment: .leading)
+    
+    // 🚀 Lógica de conexión SMB
+    func mountNAS() {
+        guard let url = URL(string: smbURL) else {
+            status = "URL inválida"
+            return
+        }
         
-        SecureField(placeholder, text: text)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+        let workspace = NSWorkspace.shared
+        
+        workspace.open(
+            [url],
+            withApplicationAt: URL(fileURLWithPath: "/System/Library/CoreServices/Finder.app"),
+            configuration: NSWorkspace.OpenConfiguration()
+        ) { _, error in
+            if let error = error {
+                status = "Error: \(error.localizedDescription)"
+            } else {
+                status = "Conectado correctamente ✅"
+            }
+        }
     }
-}
-
-#Preview {
-    ContentView()
 }
