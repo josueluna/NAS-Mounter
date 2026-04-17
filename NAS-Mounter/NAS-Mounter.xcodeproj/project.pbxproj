@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F01472F92F1A90020A2BC /* AppDelegate.swift */; };
 		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
 		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
 		CAD250342F92C56F00D85C6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAD250332F92C56F00D85C6F /* Assets.xcassets */; };
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA0F01472F92F1A90020A2BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CAD2502C2F92C56B00D85C6F /* NAS-Mounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mounter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
 		CAD250312F92C56B00D85C6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 		CAD250232F92C56A00D85C6F = {
 			isa = PBXGroup;
 			children = (
+				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
 				CAD2502E2F92C56B00D85C6F /* NAS-Mounter */,
 				CAD250402F92C57000D85C6F /* NAS-MounterTests */,
 				CAD2504A2F92C57000D85C6F /* NAS-MounterUITests */,
@@ -259,6 +262,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
 			);
@@ -350,6 +354,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -405,6 +410,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -422,6 +428,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mounter/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -458,6 +465,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mounter/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
