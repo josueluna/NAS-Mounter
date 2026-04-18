@@ -1,0 +1,626 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F01472F92F1A90020A2BC /* AppDelegate.swift */; };
+		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
+		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
+		CAD250342F92C56F00D85C6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAD250332F92C56F00D85C6F /* Assets.xcassets */; };
+		CAD250382F92C56F00D85C6F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAD250372F92C56F00D85C6F /* Preview Assets.xcassets */; };
+		CAD250422F92C57000D85C6F /* NAS_MounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250412F92C57000D85C6F /* NAS_MounterTests.swift */; };
+		CAD2504C2F92C57000D85C6F /* NAS_MounterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2504B2F92C57000D85C6F /* NAS_MounterUITests.swift */; };
+		CAD2504E2F92C57000D85C6F /* NAS_MounterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2504D2F92C57000D85C6F /* NAS_MounterUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CAD2503E2F92C57000D85C6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CAD250242F92C56A00D85C6F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CAD2502B2F92C56B00D85C6F;
+			remoteInfo = "NAS-Mounter";
+		};
+		CAD250482F92C57000D85C6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CAD250242F92C56A00D85C6F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CAD2502B2F92C56B00D85C6F;
+			remoteInfo = "NAS-Mounter";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		CA0F01472F92F1A90020A2BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CA0F01492F93099F0020A2BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CAD2502C2F92C56B00D85C6F /* NAS-Mounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mounter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
+		CAD250312F92C56B00D85C6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CAD250332F92C56F00D85C6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NAS_Mounter.entitlements; sourceTree = "<group>"; };
+		CAD250372F92C56F00D85C6F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		CAD2503D2F92C57000D85C6F /* NAS-MounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "NAS-MounterTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAD250412F92C57000D85C6F /* NAS_MounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterTests.swift; sourceTree = "<group>"; };
+		CAD250472F92C57000D85C6F /* NAS-MounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "NAS-MounterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAD2504B2F92C57000D85C6F /* NAS_MounterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterUITests.swift; sourceTree = "<group>"; };
+		CAD2504D2F92C57000D85C6F /* NAS_MounterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CAD250292F92C56B00D85C6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD2503A2F92C57000D85C6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD250442F92C57000D85C6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CAD250232F92C56A00D85C6F = {
+			isa = PBXGroup;
+			children = (
+				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
+				CAD2502E2F92C56B00D85C6F /* NAS-Mounter */,
+				CAD250402F92C57000D85C6F /* NAS-MounterTests */,
+				CAD2504A2F92C57000D85C6F /* NAS-MounterUITests */,
+				CAD2502D2F92C56B00D85C6F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CAD2502D2F92C56B00D85C6F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CAD2502C2F92C56B00D85C6F /* NAS-Mounter.app */,
+				CAD2503D2F92C57000D85C6F /* NAS-MounterTests.xctest */,
+				CAD250472F92C57000D85C6F /* NAS-MounterUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CAD2502E2F92C56B00D85C6F /* NAS-Mounter */ = {
+			isa = PBXGroup;
+			children = (
+				CA0F01492F93099F0020A2BC /* Info.plist */,
+				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
+				CAD250312F92C56B00D85C6F /* ContentView.swift */,
+				CAD250332F92C56F00D85C6F /* Assets.xcassets */,
+				CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */,
+				CAD250362F92C56F00D85C6F /* Preview Content */,
+			);
+			path = "NAS-Mounter";
+			sourceTree = "<group>";
+		};
+		CAD250362F92C56F00D85C6F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				CAD250372F92C56F00D85C6F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		CAD250402F92C57000D85C6F /* NAS-MounterTests */ = {
+			isa = PBXGroup;
+			children = (
+				CAD250412F92C57000D85C6F /* NAS_MounterTests.swift */,
+			);
+			path = "NAS-MounterTests";
+			sourceTree = "<group>";
+		};
+		CAD2504A2F92C57000D85C6F /* NAS-MounterUITests */ = {
+			isa = PBXGroup;
+			children = (
+				CAD2504B2F92C57000D85C6F /* NAS_MounterUITests.swift */,
+				CAD2504D2F92C57000D85C6F /* NAS_MounterUITestsLaunchTests.swift */,
+			);
+			path = "NAS-MounterUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CAD2502B2F92C56B00D85C6F /* NAS-Mounter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CAD250512F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-Mounter" */;
+			buildPhases = (
+				CAD250282F92C56B00D85C6F /* Sources */,
+				CAD250292F92C56B00D85C6F /* Frameworks */,
+				CAD2502A2F92C56B00D85C6F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "NAS-Mounter";
+			productName = "NAS-Mounter";
+			productReference = CAD2502C2F92C56B00D85C6F /* NAS-Mounter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CAD2503C2F92C57000D85C6F /* NAS-MounterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CAD250542F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-MounterTests" */;
+			buildPhases = (
+				CAD250392F92C57000D85C6F /* Sources */,
+				CAD2503A2F92C57000D85C6F /* Frameworks */,
+				CAD2503B2F92C57000D85C6F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CAD2503F2F92C57000D85C6F /* PBXTargetDependency */,
+			);
+			name = "NAS-MounterTests";
+			productName = "NAS-MounterTests";
+			productReference = CAD2503D2F92C57000D85C6F /* NAS-MounterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CAD250462F92C57000D85C6F /* NAS-MounterUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CAD250572F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-MounterUITests" */;
+			buildPhases = (
+				CAD250432F92C57000D85C6F /* Sources */,
+				CAD250442F92C57000D85C6F /* Frameworks */,
+				CAD250452F92C57000D85C6F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CAD250492F92C57000D85C6F /* PBXTargetDependency */,
+			);
+			name = "NAS-MounterUITests";
+			productName = "NAS-MounterUITests";
+			productReference = CAD250472F92C57000D85C6F /* NAS-MounterUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CAD250242F92C56A00D85C6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					CAD2502B2F92C56B00D85C6F = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					CAD2503C2F92C57000D85C6F = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = CAD2502B2F92C56B00D85C6F;
+					};
+					CAD250462F92C57000D85C6F = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = CAD2502B2F92C56B00D85C6F;
+					};
+				};
+			};
+			buildConfigurationList = CAD250272F92C56A00D85C6F /* Build configuration list for PBXProject "NAS-Mounter" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CAD250232F92C56A00D85C6F;
+			productRefGroup = CAD2502D2F92C56B00D85C6F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CAD2502B2F92C56B00D85C6F /* NAS-Mounter */,
+				CAD2503C2F92C57000D85C6F /* NAS-MounterTests */,
+				CAD250462F92C57000D85C6F /* NAS-MounterUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CAD2502A2F92C56B00D85C6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAD250382F92C56F00D85C6F /* Preview Assets.xcassets in Resources */,
+				CAD250342F92C56F00D85C6F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD2503B2F92C57000D85C6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD250452F92C57000D85C6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CAD250282F92C56B00D85C6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
+				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
+				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD250392F92C57000D85C6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAD250422F92C57000D85C6F /* NAS_MounterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAD250432F92C57000D85C6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAD2504E2F92C57000D85C6F /* NAS_MounterUITestsLaunchTests.swift in Sources */,
+				CAD2504C2F92C57000D85C6F /* NAS_MounterUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CAD2503F2F92C57000D85C6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CAD2502B2F92C56B00D85C6F /* NAS-Mounter */;
+			targetProxy = CAD2503E2F92C57000D85C6F /* PBXContainerItemProxy */;
+		};
+		CAD250492F92C57000D85C6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CAD2502B2F92C56B00D85C6F /* NAS-Mounter */;
+			targetProxy = CAD250482F92C57000D85C6F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		CAD2504F2F92C57000D85C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CAD250502F92C57000D85C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		CAD250522F92C57000D85C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "NAS-Mounter/NAS_Mounter.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mounter/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "NAS-Mounter/Info.plist";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "NAS Mounter needs Finder access to mount network drives.";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mounter";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CAD250532F92C57000D85C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "NAS-Mounter/NAS_Mounter.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mounter/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "NAS-Mounter/Info.plist";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "NAS Mounter needs Finder access to mount network drives.";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mounter";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		CAD250552F92C57000D85C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-MounterTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NAS-Mounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NAS-Mounter";
+			};
+			name = Debug;
+		};
+		CAD250562F92C57000D85C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-MounterTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NAS-Mounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NAS-Mounter";
+			};
+			name = Release;
+		};
+		CAD250582F92C57000D85C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-MounterUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "NAS-Mounter";
+			};
+			name = Debug;
+		};
+		CAD250592F92C57000D85C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-MounterUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "NAS-Mounter";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CAD250272F92C56A00D85C6F /* Build configuration list for PBXProject "NAS-Mounter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAD2504F2F92C57000D85C6F /* Debug */,
+				CAD250502F92C57000D85C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CAD250512F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-Mounter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAD250522F92C57000D85C6F /* Debug */,
+				CAD250532F92C57000D85C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CAD250542F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-MounterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAD250552F92C57000D85C6F /* Debug */,
+				CAD250562F92C57000D85C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CAD250572F92C57000D85C6F /* Build configuration list for PBXNativeTarget "NAS-MounterUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAD250582F92C57000D85C6F /* Debug */,
+				CAD250592F92C57000D85C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CAD250242F92C56A00D85C6F /* Project object */;
+}
