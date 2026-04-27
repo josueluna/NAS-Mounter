@@ -1,7 +1,8 @@
 import SwiftUI
 import Security
 
-// ── Keychain Helper ─────────────────────────────
+// MARK: - Keychain Helper
+
 struct KeychainHelper {
     static let service = "com.nasmounter.credentials"
 
@@ -11,6 +12,7 @@ struct KeychainHelper {
             "username": username,
             "password": password
         ]
+
         guard let encoded = try? JSONEncoder().encode(data) else { return }
 
         let query: [String: Any] = [
@@ -19,7 +21,10 @@ struct KeychainHelper {
             kSecAttrAccount as String: "nas-credentials"
         ]
 
-        let updateFields: [String: Any] = [kSecValueData as String: encoded]
+        let updateFields: [String: Any] = [
+            kSecValueData as String: encoded
+        ]
+
         let status = SecItemUpdate(query as CFDictionary, updateFields as CFDictionary)
 
         if status == errSecItemNotFound {
@@ -39,13 +44,16 @@ struct KeychainHelper {
         ]
 
         var result: AnyObject?
+
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
               let data = result as? Data,
               let decoded = try? JSONDecoder().decode([String: String].self, from: data),
               let host = decoded["host"],
               let username = decoded["username"],
               let password = decoded["password"]
-        else { return nil }
+        else {
+            return nil
+        }
 
         return (host, username, password)
     }
@@ -56,29 +64,32 @@ struct KeychainHelper {
             kSecAttrService as String: service,
             kSecAttrAccount as String: "nas-credentials"
         ]
+
         SecItemDelete(query as CFDictionary)
     }
 }
 
-// ── MAIN VIEW ───────────────────────────────────
+// MARK: - Main View
+
 struct ContentView: View {
 
+    @State private var showSettingsPanel = false
     @State private var showAppMenu = false
-    @State private var smbURL    = ""
-    @State private var username  = ""
-    @State private var password  = ""
-    @State private var remember  = false
 
-    @State private var status      = ""
-    @State private var isConnecting  = false
-    @State private var isSuccess     = false
+    @State private var smbURL = ""
+    @State private var username = ""
+    @State private var password = ""
+    @State private var remember = false
+
+    @State private var status = ""
+    @State private var isConnecting = false
+    @State private var isSuccess = false
 
     @State private var availableShares: [String] = []
     @State private var selectedShares: Set<String> = []
-    @State private var showSharePicker  = false
+    @State private var showSharePicker = false
     @State private var isFetchingShares = false
 
-    // FIX #1: host se extrae una sola vez y se reutiliza en toda la vista
     private var extractedHost: String {
         let raw = smbURL.trimmingCharacters(in: .whitespaces)
         let withScheme = raw.lowercased().hasPrefix("smb://") ? raw : "smb://\(raw)"
@@ -86,272 +97,350 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ZStack(alignment: .bottomTrailing) {
+            mainContent
 
-            // ── Header ──────────────────────────────
-            HStack(spacing: 10) {
-                Image(systemName: "externaldrive.fill.badge.wifi")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("NAS Mounter")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-            }
-            .padding(.bottom, 20)
+            appMenuButton
 
-            // ── Fields ──────────────────────────────
-            VStack(spacing: 12) {
-
-                FieldRow(label: "SMB") {
-                    HStack(spacing: 6) {
-                        TextField("192.168.X.X  o  192.168.X.X/Share", text: $smbURL)
-                            .textFieldStyle(.plain)
-                            .styledField()
-                        
-                        Button {
-                            fetchShares()
-                        } label: {
-                            Group {
-                                if isFetchingShares {
-                                    ProgressView()
-                                        .scaleEffect(0.6)
-                                        .frame(width: 28, height: 28)
-                                } else {
-                                    Image(systemName: "list.bullet.rectangle")
-                                        .font(.system(size: 13))
-                                        .frame(width: 28, height: 28)
-                                }
-                            }
-                            .background(
-                                RoundedRectangle(cornerRadius: 7)
-                                    .fill(Color(NSColor.controlBackgroundColor))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 7)
-                                            .strokeBorder(Color.blue.opacity(0.35), lineWidth: 1)
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(username.isEmpty || password.isEmpty || isFetchingShares)
-                        .opacity((username.isEmpty || password.isEmpty) ? 0.4 : 1)
-                        .help("Browse available shares")
-                    }
-                }
-
-                FieldRow(label: "User") {
-                    TextField("Username", text: $username)
-                        .textFieldStyle(.plain)
-                        .styledField()
-                }
-
-                FieldRow(label: "Password") {
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(.plain)
-                        .styledField()
-                        .onSubmit { handleConnect() }
-                }
-            }
-
-            if showSharePicker {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text("Available shares — choose at least one:")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        if !availableShares.isEmpty {
-                            Text("\(availableShares.count) shares")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.top, 12)
-
-                    if isFetchingShares {
-                        HStack {
-                            Spacer()
-                            ProgressView("Searching…")
-                                .font(.system(size: 12))
-                            Spacer()
-                        }
-                        .frame(height: 60)
-                    } else if availableShares.isEmpty {
-                        HStack {
-                            Spacer()
-                            Text("No shares found")
-                                .font(.system(size: 12))
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        .frame(height: 60)
-                    } else {
-                        ScrollView(.vertical, showsIndicators: true) {
-                            VStack(spacing: 0) {
-                                ForEach(availableShares, id: \.self) { share in
-                                    Button {
-                                        if selectedShares.contains(share) {
-                                            selectedShares.remove(share)
-                                        } else {
-                                            selectedShares.insert(share)
-                                        }
-                                    } label: {
-                                        HStack(spacing: 8) {
-                                            Image(systemName:
-                                                selectedShares.contains(share)
-                                                    ? "checkmark.circle.fill"
-                                                    : "circle"
-                                            )
-                                            .foregroundColor(.blue)
-                                            .font(.system(size: 13))
-
-                                            Image(systemName: "externaldrive")
-                                                .font(.system(size: 11))
-                                                .foregroundColor(.secondary)
-
-                                            Text(share)
-                                                .font(.system(size: 13))
-                                                .foregroundColor(.primary)
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            selectedShares.contains(share)
-                                                ? Color.blue.opacity(0.08)
-                                                : Color.clear
-                                        )
-                                        .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    if share != availableShares.last {
-                                        Divider().padding(.leading, 10)
-                                    }
-                                }
-                            }
-                        }
-                        .frame(maxHeight: CGFloat(min(availableShares.count, 4)) * 36)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(NSColor.controlBackgroundColor))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .strokeBorder(Color.blue.opacity(0.35), lineWidth: 1)
-                                )
-                        )
-                    }
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-
-            Toggle(isOn: $remember) {
-                Text("Remember Password")
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-            }
-            .toggleStyle(ModernCheckboxStyle())
-            .padding(.top, 14)
-
-            Button(action: handleConnect) {
-                HStack(spacing: 8) {
-                    if isConnecting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.75)
-                    }
-                    Text(isConnecting ? "Connecting…" : "Connect")
-                        .font(.system(size: 15, weight: .semibold))
-                }
-                .frame(maxWidth: .infinity, minHeight: 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isConnecting ? Color.blue.opacity(0.7) : Color.blue)
-                )
-                .foregroundColor(.white)
-            }
-            .buttonStyle(.plain)
-            .disabled(isConnecting)
-            .padding(.top, 16)
-
-            if !status.isEmpty {
-                if isSuccess {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.system(size: 13))
-                            Text("Drive mounted successfully")
-                                .font(.system(size: 13, weight: .semibold))
-                        }
-                        Text("This window will close shortly...")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 19)
-                    }
-                    .padding(.top, 12)
-                } else {
-                    HStack(spacing: 5) {
-                        Image(systemName: "exclamationmark.circle.fill")
-                            .foregroundColor(.red)
-                            .font(.system(size: 12))
-                        Text(status)
-                            .font(.system(size: 12))
-                            .foregroundColor(.red)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.top, 10)
-                }
+            if showSettingsPanel {
+                settingsOverlay
+                    .transition(.opacity)
+                    .zIndex(10)
             }
         }
-        
-        .padding(.top, 24)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 40)
-        .frame(width: 380)
-        
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showAppMenu.toggle()
-            } label: {
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                    .padding(8)
-            }
-            .buttonStyle(.plain)
-
-            .background(Color.clear)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.gray.opacity(0.15))
-            )
-            .offset(y: -8) // mueve hacia abajo SIN afectar layout
-            .padding(.trailing, 12)
-            .popover(isPresented: $showAppMenu, arrowEdge: .bottom) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Button("Close NAS-Mounter") {
-                        NSApp.terminate(nil)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(16)
-                .frame(width: 180)
-            }
-        }
-        
         .fixedSize(horizontal: false, vertical: true)
         .animation(.easeInOut(duration: 0.2), value: showSharePicker)
         .animation(.easeInOut(duration: 0.2), value: status)
+        .animation(.easeInOut(duration: 0.25), value: showSettingsPanel)
         .onAppear {
-            // FIX #8: cargar credenciales del Keychain al abrir
             if let saved = KeychainHelper.load() {
-                smbURL   = saved.host
+                smbURL = saved.host
                 username = saved.username
                 password = saved.password
                 remember = true
             }
         }
     }
+
+    private var mainContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            headerView
+
+            fieldsView
+
+            sharePickerView
+
+            rememberPasswordView
+
+            connectButton
+
+            statusView
+        }
+        .padding(.top, 24)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 40)
+        .frame(width: 380)
+    }
+
+    private var headerView: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "externaldrive.fill.badge.wifi")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(.blue)
+
+            Text("NAS Mounter")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+        }
+        .padding(.bottom, 20)
+    }
+
+    private var fieldsView: some View {
+        VStack(spacing: 12) {
+            FieldRow(label: "SMB") {
+                HStack(spacing: 6) {
+                    TextField("192.168.X.X or 192.168.X.X/Share", text: $smbURL)
+                        .textFieldStyle(.plain)
+                        .styledField()
+
+                    Button {
+                        fetchShares()
+                    } label: {
+                        Group {
+                            if isFetchingShares {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                                    .frame(width: 28, height: 28)
+                            } else {
+                                Image(systemName: "list.bullet.rectangle")
+                                    .font(.system(size: 13))
+                                    .frame(width: 28, height: 28)
+                            }
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(Color(NSColor.controlBackgroundColor))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 7)
+                                        .strokeBorder(Color.blue.opacity(0.35), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(username.isEmpty || password.isEmpty || isFetchingShares)
+                    .opacity((username.isEmpty || password.isEmpty) ? 0.4 : 1)
+                    .help("Browse available shares")
+                }
+            }
+
+            FieldRow(label: "User") {
+                TextField("Username", text: $username)
+                    .textFieldStyle(.plain)
+                    .styledField()
+            }
+
+            FieldRow(label: "Password") {
+                SecureField("Password — press Enter to connect", text: $password)
+                    .textFieldStyle(.plain)
+                    .styledField()
+                    .onSubmit {
+                        handleConnect()
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var sharePickerView: some View {
+        if showSharePicker {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Available shares — select one or more:")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    if !availableShares.isEmpty {
+                        Text("\(availableShares.count) shares")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 12)
+
+                if isFetchingShares {
+                    HStack {
+                        Spacer()
+                        ProgressView("Looking for shares…")
+                            .font(.system(size: 12))
+                        Spacer()
+                    }
+                    .frame(height: 60)
+                } else if availableShares.isEmpty {
+                    HStack {
+                        Spacer()
+                        Text("No shares found")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .frame(height: 60)
+                } else {
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: 0) {
+                            ForEach(availableShares, id: \.self) { share in
+                                Button {
+                                    if selectedShares.contains(share) {
+                                        selectedShares.remove(share)
+                                    } else {
+                                        selectedShares.insert(share)
+                                    }
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: selectedShares.contains(share) ? "checkmark.circle.fill" : "circle")
+                                            .foregroundColor(.blue)
+                                            .font(.system(size: 13))
+
+                                        Image(systemName: "externaldrive")
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.secondary)
+
+                                        Text(share)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(.primary)
+
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        selectedShares.contains(share)
+                                            ? Color.blue.opacity(0.08)
+                                            : Color.clear
+                                    )
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                if share != availableShares.last {
+                                    Divider()
+                                        .padding(.leading, 10)
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxHeight: CGFloat(min(availableShares.count, 4)) * 36)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(NSColor.controlBackgroundColor))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(Color.blue.opacity(0.35), lineWidth: 1)
+                            )
+                    )
+                }
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+    }
+
+    private var rememberPasswordView: some View {
+        Toggle(isOn: $remember) {
+            Text("Remember Password")
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+        }
+        .toggleStyle(ModernCheckboxStyle())
+        .padding(.top, 14)
+        .onChange(of: remember) { newValue in
+            if !newValue {
+                KeychainHelper.delete()
+            }
+        }
+    }
+
+    private var connectButton: some View {
+        Button(action: handleConnect) {
+            HStack(spacing: 8) {
+                if isConnecting {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.75)
+                }
+
+                Text(isConnecting ? "Connecting…" : "Connect")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isConnecting ? Color.blue.opacity(0.7) : Color.blue)
+            )
+            .foregroundColor(.white)
+        }
+        .buttonStyle(.plain)
+        .disabled(isConnecting)
+        .padding(.top, 16)
+    }
+
+    @ViewBuilder
+    private var statusView: some View {
+        if !status.isEmpty {
+            if isSuccess {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.system(size: 13))
+
+                        Text("Drive mounted successfully")
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+
+                    Text("This window will close shortly...")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 19)
+                }
+                .padding(.top, 12)
+            } else {
+                HStack(spacing: 5) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundColor(.red)
+                        .font(.system(size: 12))
+
+                    Text(status)
+                        .font(.system(size: 12))
+                        .foregroundColor(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 10)
+            }
+        }
+    }
+
+    private var appMenuButton: some View {
+        Button {
+            showAppMenu.toggle()
+        } label: {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+                .padding(6)
+        }
+        .buttonStyle(.plain)
+        .background(Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.gray.opacity(0.15))
+        )
+        .padding(.trailing, 12)
+        .padding(.bottom, 10)
+        .popover(isPresented: $showAppMenu, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 12) {
+                Button("Settings") {
+                    showAppMenu = false
+
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showSettingsPanel = true
+                    }
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+
+                Button("Close NAS-Mounter") {
+                    NSApp.terminate(nil)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+            .frame(width: 180)
+        }
+    }
+
+    private var settingsOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.25)
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showSettingsPanel = false
+                    }
+                }
+
+            HStack {
+                Spacer()
+
+                SettingsPanelView(show: $showSettingsPanel)
+                    .frame(width: 260)
+                    .transition(.move(edge: .trailing))
+            }
+        }
+    }
+
+    // MARK: - Actions
 
     func handleConnect() {
         guard !username.isEmpty, !password.isEmpty else {
@@ -361,6 +450,7 @@ struct ContentView: View {
         }
 
         let host = extractedHost
+
         guard !host.isEmpty else {
             status = "Invalid IP/URL"
             isSuccess = false
@@ -384,56 +474,60 @@ struct ContentView: View {
 
     func fetchShares() {
         guard !username.isEmpty, !password.isEmpty else {
-            status = "Ingresa usuario y contraseña primero."
+            status = "Enter username and password first."
             isSuccess = false
             return
         }
 
         let host = extractedHost
+
         guard !host.isEmpty else {
-            status = "Ingresa la IP del NAS primero."
+            status = "Enter the NAS IP first."
             isSuccess = false
             return
         }
 
         isFetchingShares = true
-        showSharePicker  = true
-        availableShares  = []
-        selectedShares   = []
-        status           = ""
+        showSharePicker = true
+        availableShares = []
+        selectedShares = []
+        status = ""
 
         let encodedUser = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed) ?? username
         let encodedPass = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed) ?? password
 
         DispatchQueue.global(qos: .userInitiated).async {
-
             let task = Process()
             task.launchPath = "/usr/bin/smbutil"
             task.arguments = ["view", "//\(encodedUser):\(encodedPass)@\(host)"]
 
             let outPipe = Pipe()
             let errPipe = Pipe()
+
             task.standardOutput = outPipe
-            task.standardError  = errPipe
+            task.standardError = errPipe
 
             task.launch()
             task.waitUntilExit()
 
             let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
             let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            let output  = String(data: outData, encoding: .utf8) ?? ""
-            let errOut  = String(data: errData, encoding: .utf8) ?? ""
+
+            let output = String(data: outData, encoding: .utf8) ?? ""
+            let errOut = String(data: errData, encoding: .utf8) ?? ""
 
             if task.terminationStatus != 0 || output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 let errMsg = errOut.trimmingCharacters(in: .whitespacesAndNewlines)
+
                 DispatchQueue.main.async {
                     self.isFetchingShares = false
-                    self.showSharePicker  = false
+                    self.showSharePicker = false
                     self.status = errMsg.isEmpty
-                        ? "No se pudo conectar. Verifica IP y credenciales."
+                        ? "Connection failed. Check IP and credentials."
                         : "Error: \(errMsg)"
                     self.isSuccess = false
                 }
+
                 return
             }
 
@@ -444,17 +538,21 @@ struct ContentView: View {
                         .trimmingCharacters(in: .whitespaces)
                         .components(separatedBy: .whitespaces)
                         .filter { !$0.isEmpty }
+
                     guard parts.count >= 2, parts[1] == "Disk" else { return nil }
+
                     let name = parts[0]
-                    // filtrar shares admin ($) y vacíos
+
                     guard !name.hasSuffix("$"), !name.isEmpty else { return nil }
+
                     return name
                 }
 
             DispatchQueue.main.async {
                 self.isFetchingShares = false
+
                 if shares.isEmpty {
-                    self.status = "No se encontraron shares disponibles."
+                    self.status = "No shares found."
                     self.isSuccess = false
                     self.showSharePicker = false
                 } else {
@@ -475,6 +573,7 @@ struct ContentView: View {
         } else {
             let raw = smbURL.trimmingCharacters(in: .whitespaces)
             let withScheme = raw.lowercased().hasPrefix("smb://") ? raw : "smb://\(raw)"
+
             if let url = URL(string: withScheme),
                let share = url.pathComponents.dropFirst().first {
                 sharesToMount = [share]
@@ -482,24 +581,24 @@ struct ContentView: View {
         }
 
         guard !sharesToMount.isEmpty else {
-            status = "Select a share"
+            status = "Select at least one share."
             isSuccess = false
             return
         }
 
         isConnecting = true
-        status       = ""
-        isSuccess    = false
+        status = ""
+        isSuccess = false
 
         let encodedUser = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed) ?? username
         let encodedPass = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed) ?? password
 
         DispatchQueue.global(qos: .userInitiated).async {
-
             var mountErrors: [String] = []
 
             for share in sharesToMount {
                 let fullURL = "smb://\(encodedUser):\(encodedPass)@\(host)/\(share)"
+
                 let script = """
                 tell application "Finder"
                     try
@@ -527,28 +626,34 @@ struct ContentView: View {
 
                 if mountErrors.isEmpty {
                     self.isSuccess = true
-                    self.status    = "ok"
+                    self.status = "ok"
                     self.showSharePicker = false
 
                     if self.remember {
                         KeychainHelper.save(
-                            host:     self.smbURL,
+                            host: self.smbURL,
                             username: self.username,
                             password: self.password
                         )
                     }
 
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                        NSApp.hide(nil)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                        if let delegate = NSApplication.shared.delegate as? AppDelegate {
+                            delegate.statusBar?.closePopover()
+                        } else {
+                            NSApp.hide(nil)
+                        }
                     }
                 } else {
                     self.isSuccess = false
-                    self.status    = mountErrors.joined(separator: "\n")
+                    self.status = mountErrors.joined(separator: "\n")
                 }
             }
         }
     }
 }
+
+// MARK: - UI Helpers
 
 struct FieldRow<Content: View>: View {
     let label: String
@@ -565,6 +670,7 @@ struct FieldRow<Content: View>: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.secondary)
                 .frame(width: 64, alignment: .trailing)
+
             content
         }
     }
@@ -608,12 +714,14 @@ struct ModernCheckboxStyle: ToggleStyle {
                                     lineWidth: 1.2
                                 )
                         )
+
                     if configuration.isOn {
                         Image(systemName: "checkmark")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
                     }
                 }
+
                 configuration.label
             }
         }
