@@ -1,6 +1,6 @@
 import SwiftUI
 
-// ── NAS Mountie Brand Tokens ─────────────────────
+// ── NAS-Mountie Brand Tokens ─────────────────────
 // Single source of truth — change here, updates everywhere.
 
 enum Brand {
