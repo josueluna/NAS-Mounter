@@ -1,12 +1,12 @@
 # NAS Mounter
-[![Version](https://img.shields.io/github/v/release/josueluna/NAS-Mounter?logo=github)](https://github.com/josueluna/NAS-Mounter/releases)
+[![Version](https://img.shields.io/github/v/release/josueluna/NAS-Mountie?logo=github)](https://github.com/josueluna/NAS-Mountie/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
-[![Beta](https://img.shields.io/badge/status-BETA-orange)](https://github.com/josueluna/NAS-Mounter)
+[![Beta](https://img.shields.io/badge/status-BETA-orange)](https://github.com/josueluna/NAS-Mountie)
 [![Platform](https://img.shields.io/badge/platform-macOS-blue)](https://developer.apple.com/macos/)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/josueluna/NAS-Mounter)](https://github.com/josueluna/NAS-Mounter)
-[![Issues](https://img.shields.io/github/issues/josueluna/NAS-Mounter)](https://github.com/josueluna/NAS-Mounter/issues)
-[![Contributors](https://img.shields.io/github/contributors/josueluna/NAS-Mounter)](https://github.com/josueluna/NAS-Mounter/graphs/contributors)
-[![Maintenance](https://img.shields.io/badge/maintenance-semi--active-yellow)](https://github.com/josueluna/NAS-Mounter)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie)
+[![Issues](https://img.shields.io/github/issues/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie/issues)
+[![Contributors](https://img.shields.io/github/contributors/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie/graphs/contributors)
+[![Maintenance](https://img.shields.io/badge/maintenance-semi--active-yellow)](https://github.com/josueluna/NAS-Mountie)
 
 NAS Mounter is a macOS application that allows users to easily mount SMB 
 shares using credentials saved in the system keychain. It provides a 
