@@ -7,13 +7,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>NAS-Mounter</string>
+	<string>NAS-Mountie</string>
 	<key>CFBundleIdentifier</key>
-	<string>josueluna.NAS-Mounter</string>
+	<string>josueluna.NAS-Mountie</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NAS-Mounter</string>
+	<string>NAS-Mountie</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
