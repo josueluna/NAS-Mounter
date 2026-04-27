@@ -1,15 +1,15 @@
-.DS_Store
-# Ignorar archivos generados por macOS
-.DS_Store
-NAS-Mounter/.DS_Store
-
 # Ignorar directorios específicos de Xcode
+
 NAS-Mounter/NAS-Mounter.xcodeproj/xcuserdata/
 NAS-Mounter/NAS-Mounter.xcodeproj/xcshareddata/xcuserdata
+
 # Ignorar archivos generados por macOS
+
 .DS_Store
 NAS-Mounter/.DS_Store
+.xcuserstate
 
 # Ignorar directorios específicos de Xcode
+
 NAS-Mounter/NAS-Mounter.xcodeproj/xcuserdata/
 NAS-Mounter/NAS-Mounter.xcodeproj/xcshareddata/
