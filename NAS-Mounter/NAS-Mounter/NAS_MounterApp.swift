@@ -1,12 +1,13 @@
 import SwiftUI
 
 @main
-struct NASMounterApp: App {
+struct NAS_MounterApp: App {
+
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        Settings {
+            EmptyView()
         }
-        .windowResizability(.contentSize)
-        .defaultSize(width: 380, height: 1)
     }
 }

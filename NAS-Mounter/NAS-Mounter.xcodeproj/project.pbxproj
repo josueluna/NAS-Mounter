@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F01472F92F1A90020A2BC /* AppDelegate.swift */; };
+		CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */; };
 		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
 		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
 		CAD250342F92C56F00D85C6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAD250332F92C56F00D85C6F /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 /* Begin PBXFileReference section */
 		CA0F01472F92F1A90020A2BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA0F01492F93099F0020A2BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		CAD2502C2F92C56B00D85C6F /* NAS-Mounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mounter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
 		CAD250312F92C56B00D85C6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 		CAD250232F92C56A00D85C6F = {
 			isa = PBXGroup;
 			children = (
+				CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */,
 				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
 				CAD2502E2F92C56B00D85C6F /* NAS-Mounter */,
 				CAD250402F92C57000D85C6F /* NAS-MounterTests */,
@@ -265,6 +268,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
+				CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */,
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
 			);
@@ -355,6 +359,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -411,6 +416,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
