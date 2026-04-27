@@ -7,14 +7,15 @@ struct SettingsPanelView: View {
 
     @AppStorage("runOnStartup") private var storedRunOnStartup = false
     @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
-
+    @AppStorage("showDockIcon") private var storedShowDockIcon = false
+    
+    @State private var draftShowDockIcon = false
     @State private var draftRunOnStartup = false
     @State private var allowedNetworks: [String] = []
     @State private var currentNetwork: String? = nil
     @State private var statusMessage = ""
     @State private var isError = false
 
-    // Ancho del ícono badge — usado para alinear contenido en todas las cards
     private let iconSize: CGFloat = 28
     private let iconSpacing: CGFloat = 12
 
@@ -24,9 +25,8 @@ struct SettingsPanelView: View {
             // ── Header ──────────────────────────────
             HStack(alignment: .center) {
                 Text("Settings")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(Brand.headline(16))
                     .foregroundColor(.primary)
-
                 Spacer()
 
             }
@@ -34,31 +34,24 @@ struct SettingsPanelView: View {
             .padding(.top, 16)
             .padding(.bottom, 14)
 
-            // ── Scrollable content ───────────────────
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 10) {
+            // ── Content ──────────────────────────────
+            ScrollView {
+                VStack {
 
-                    // ── Card: Launch at Login ────────
+                    // Card: Launch at Login
                     SettingsCard {
                         HStack(alignment: .center, spacing: iconSpacing) {
-
-                            // Ícono badge
                             iconBadge("power")
-
-                            // Texto
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Launch at Login")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(Brand.headline())
                                     .foregroundColor(.primary)
-                                Text("Open NAS Mounter automatically when you log in.")
-                                    .font(.system(size: 11))
+                                Text("Open NAS Mountie automatically when you log in.")
+                                    .font(Brand.caption())
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-
                             Spacer()
-
-                            // FIX: toggle centrado verticalmente, padding derecho
                             Toggle("", isOn: $draftRunOnStartup)
                                 .labelsHidden()
                                 .scaleEffect(0.8)
@@ -66,77 +59,62 @@ struct SettingsPanelView: View {
                         }
                     }
 
-                    // ── Card: Wi-Fi Networks ─────────
+                    // Card: Wi-Fi Networks
                     SettingsCard {
                         VStack(alignment: .leading, spacing: 12) {
-
-                            // Card header row
                             HStack(alignment: .center, spacing: iconSpacing) {
                                 iconBadge("wifi")
-
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Allowed Wi-Fi Networks")
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(Brand.headline())
                                         .foregroundColor(.primary)
                                     Text("Only mount shares on these networks. Empty = any network.")
-                                        .font(.system(size: 11))
+                                        .font(Brand.caption())
                                         .foregroundColor(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
 
-                            Divider()
-                                .padding(.leading, iconSize + iconSpacing)
+                            Divider().padding(.leading, iconSize + iconSpacing)
 
                             HStack(alignment: .center, spacing: iconSpacing) {
-
                                 ZStack {
-
                                     Image(systemName: currentNetwork != nil ? "wifi.circle.fill" : "wifi.slash")
                                         .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(currentNetwork != nil ? .green : .secondary)
+                                        .foregroundColor(currentNetwork != nil ? Brand.primary : .secondary)
                                 }
                                 .frame(width: iconSize, height: iconSize)
 
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("Current network")
-                                        .font(.system(size: 10))
+                                        .font(Brand.caption(10))
                                         .foregroundColor(.secondary)
-
                                     Text(currentNetwork ?? "Not detected")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(Brand.headline(12))
                                         .foregroundColor(currentNetwork != nil ? .primary : .secondary)
                                 }
-
                                 Spacer()
-
-                                Button {
-                                    addCurrentNetwork()
-                                } label: {
+                                Button { addCurrentNetwork() } label: {
                                     HStack(spacing: 4) {
                                         Image(systemName: "plus")
                                             .font(.system(size: 10, weight: .semibold))
                                         Text("Add")
-                                            .font(.system(size: 11, weight: .medium))
+                                            .font(Brand.caption(11))
                                     }
-                                    .foregroundColor(currentNetwork == nil ? .secondary : .blue)
+                                    .foregroundColor(currentNetwork == nil ? .secondary : Brand.primary)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 5)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .fill(
-                                                currentNetwork == nil
-                                                ? Color(NSColor.controlBackgroundColor)
-                                                : Color.blue.opacity(0.1)
-                                            )
+                                        RoundedRectangle(cornerRadius: Brand.radiusSmall)
+                                            .fill(currentNetwork == nil
+                                                  ? Color(NSColor.controlBackgroundColor)
+                                                  : Brand.primaryLight)
                                     )
                                 }
                                 .buttonStyle(.plain)
                                 .disabled(currentNetwork == nil)
                             }
 
-                            // Networks list or empty state
-                            // FIX: indentado con el mismo offset que los títulos
                             VStack(alignment: .leading, spacing: 0) {
                                 if allowedNetworks.isEmpty {
                                     HStack {
@@ -146,7 +124,7 @@ struct SettingsPanelView: View {
                                                 .font(.system(size: 18))
                                                 .foregroundColor(.secondary.opacity(0.4))
                                             Text("No networks added yet")
-                                                .font(.system(size: 11))
+                                                .font(Brand.caption())
                                                 .foregroundColor(.secondary)
                                         }
                                         .padding(.vertical, 10)
@@ -158,18 +136,13 @@ struct SettingsPanelView: View {
                                             HStack(spacing: 8) {
                                                 Image(systemName: "wifi")
                                                     .font(.system(size: 11))
-                                                    .foregroundColor(.blue)
+                                                    .foregroundColor(Brand.primary)
                                                     .frame(width: 16)
-
                                                 Text(network)
-                                                    .font(.system(size: 12))
+                                                    .font(Brand.body(12))
                                                     .foregroundColor(.primary)
-
                                                 Spacer()
-
-                                                Button {
-                                                    removeNetwork(network)
-                                                } label: {
+                                                Button { removeNetwork(network) } label: {
                                                     Image(systemName: "xmark.circle.fill")
                                                         .font(.system(size: 13))
                                                         .foregroundColor(Color(NSColor.tertiaryLabelColor))
@@ -179,17 +152,16 @@ struct SettingsPanelView: View {
                                             }
                                             .padding(.vertical, 7)
                                             .padding(.horizontal, 10)
-
                                             if network != allowedNetworks.last {
                                                 Divider().padding(.leading, 10)
                                             }
                                         }
                                     }
                                     .background(
-                                        RoundedRectangle(cornerRadius: 8)
+                                        RoundedRectangle(cornerRadius: Brand.radiusMedium)
                                             .fill(Color(NSColor.windowBackgroundColor))
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: 8)
+                                                RoundedRectangle(cornerRadius: Brand.radiusMedium)
                                                     .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
                                             )
                                     )
@@ -199,16 +171,38 @@ struct SettingsPanelView: View {
                         }
                     }
 
-                    // ── Status message — auto-dismiss ─
+                    // Card: Show Dock Icon
+                    SettingsCard {
+                        HStack(alignment: .center, spacing: iconSpacing) {
+                            iconBadge("dock.rectangle")
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Show Dock Icon")
+                                    .font(Brand.headline())
+                                    .foregroundColor(.primary)
+
+                                Text("Show NAS Mountie in the macOS Dock.")
+                                    .font(Brand.caption())
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: $draftShowDockIcon)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 2)
+                        }
+                    }
+                    
                     if !statusMessage.isEmpty {
                         HStack(spacing: 6) {
-                            Image(systemName: isError
-                                  ? "exclamationmark.circle.fill"
-                                  : "checkmark.circle.fill")
+                            Image(systemName: isError ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
                                 .font(.system(size: 11))
-                                .foregroundColor(isError ? .red : .green)
+                                .foregroundColor(isError ? .red : Brand.primary)
                             Text(statusMessage)
-                                .font(.system(size: 11))
+                                .font(Brand.caption())
                                 .foregroundColor(isError ? .red : .secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -217,76 +211,63 @@ struct SettingsPanelView: View {
                     }
                 }
                 .padding(.horizontal, 12)
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
             }
 
-            // ── Footer ──────────────────────────────
-            
+            Divider()
+
             HStack(spacing: 8) {
                 Button("Cancel") {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        show = false
-                    }
+                    withAnimation(.easeInOut(duration: 0.25)) { show = false }
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 13))
+                .font(Brand.body())
                 .foregroundColor(.secondary)
-
                 Spacer()
-
-                Button {
-                    saveSettings()
-                } label: {
+                Button { saveSettings() } label: {
                     Text("Save")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(Brand.headline())
                         .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 7)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                        .background(RoundedRectangle(cornerRadius: Brand.radiusMedium).fill(Brand.primary))
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
+        .frame(width: 380)
         .background(Color(NSColor.windowBackgroundColor))
         .onAppear { loadCurrentSettings() }
         .animation(.easeInOut(duration: 0.2), value: allowedNetworks)
         .animation(.easeInOut(duration: 0.2), value: statusMessage)
     }
 
-    // ── Shared icon badge ────────────────────────
     @ViewBuilder
     private func iconBadge(_ systemName: String) -> some View {
         Image(systemName: systemName)
             .font(.system(size: 13, weight: .medium))
-            .foregroundColor(.blue)
+            .foregroundColor(Brand.primary)
             .frame(width: iconSize, height: iconSize)
-            .background(RoundedRectangle(cornerRadius: 7).fill(Color.blue.opacity(0.1)))
+            .background(RoundedRectangle(cornerRadius: 7).fill(Brand.primaryLight))
     }
 
-    // ── FIX: auto-dismiss status after 2.5s ─────
     private func showStatus(_ message: String, error: Bool = false) {
-        statusMessage = message
-        isError = error
-
+        statusMessage = message; isError = error
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            withAnimation(.easeOut(duration: 0.3)) {
-                statusMessage = ""
-            }
+            withAnimation(.easeOut(duration: 0.3)) { statusMessage = "" }
         }
     }
-
-    // ── Helpers ─────────────────────────────────
 
     private func loadCurrentSettings() {
         currentNetwork = NetworkHelper.currentSSID()
         allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
-
+        draftShowDockIcon = storedShowDockIcon
+        
         if #available(macOS 13.0, *) {
             draftRunOnStartup = SMAppService.mainApp.status == .enabled
             storedRunOnStartup = draftRunOnStartup
-
             if SMAppService.mainApp.status == .requiresApproval {
                 showStatus("Startup permission requires approval in System Settings.")
             }
@@ -297,33 +278,23 @@ struct SettingsPanelView: View {
     }
 
     private func addCurrentNetwork() {
-        guard let currentNetwork else {
-            showStatus("Current Wi-Fi network could not be detected.", error: true)
-            return
-        }
-
-        guard !allowedNetworks.contains(currentNetwork) else {
-            showStatus("\(currentNetwork) is already in the list.")
-            return
-        }
-
-        withAnimation {
-            allowedNetworks.append(currentNetwork)
-            allowedNetworks.sort()
-        }
-
+        guard let currentNetwork else { showStatus("Network could not be detected.", error: true); return }
+        guard !allowedNetworks.contains(currentNetwork) else { showStatus("\(currentNetwork) is already in the list."); return }
+        withAnimation { allowedNetworks.append(currentNetwork); allowedNetworks.sort() }
         showStatus("\(currentNetwork) added.")
     }
 
     private func removeNetwork(_ network: String) {
-        withAnimation {
-            allowedNetworks.removeAll { $0 == network }
-        }
+        withAnimation { allowedNetworks.removeAll { $0 == network } }
         showStatus("\(network) removed.")
     }
 
     private func saveSettings() {
         saveStartupSetting()
+
+        storedShowDockIcon = draftShowDockIcon
+        NSApp.setActivationPolicy(draftShowDockIcon ? .regular : .accessory)
+
         storedAllowedWiFiNetworks = NetworkHelper.encodeNetworks(allowedNetworks)
 
         withAnimation(.easeInOut(duration: 0.25)) {
@@ -335,41 +306,26 @@ struct SettingsPanelView: View {
         if #available(macOS 13.0, *) {
             do {
                 if draftRunOnStartup {
-                    if SMAppService.mainApp.status != .enabled {
-                        try SMAppService.mainApp.register()
-                    }
+                    if SMAppService.mainApp.status != .enabled { try SMAppService.mainApp.register() }
                     storedRunOnStartup = true
                 } else {
-                    if SMAppService.mainApp.status == .enabled ||
-                        SMAppService.mainApp.status == .requiresApproval {
+                    if SMAppService.mainApp.status == .enabled || SMAppService.mainApp.status == .requiresApproval {
                         try SMAppService.mainApp.unregister()
                     }
                     storedRunOnStartup = false
                 }
-            } catch {
-                showStatus("Could not update startup setting: \(error.localizedDescription)", error: true)
-            }
-        } else {
-            showStatus("Launch at Login requires macOS 13 or later.", error: true)
-        }
+            } catch { showStatus("Could not update startup: \(error.localizedDescription)", error: true) }
+        } else { showStatus("Launch at Login requires macOS 13+.", error: true) }
     }
 }
 
-// ── Card container ───────────────────────────────
 struct SettingsCard<Content: View>: View {
     let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
+    init(@ViewBuilder content: () -> Content) { self.content = content() }
     var body: some View {
         content
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(NSColor.controlBackgroundColor))
-            )
+            .background(RoundedRectangle(cornerRadius: Brand.radiusLarge).fill(Color(NSColor.controlBackgroundColor)))
     }
 }
