@@ -6,6 +6,7 @@ NAS-Mounter/NAS-Mounter.xcodeproj/xcshareddata/xcuserdata
 # Ignorar archivos generados por macOS
 
 .DS_Store
+.xcuserstate
 NAS-Mounter/.DS_Store
 .xcuserstate
 
