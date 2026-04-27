@@ -10,8 +10,10 @@ class StatusBarController {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "externaldrive.fill.badge.wifi",
-                                   accessibilityDescription: "NAS Mounter")
+            let image = NSImage(named: "TBIcon")
+            image?.isTemplate = true   // ← esta línea es todo lo que falta
+            button.image = image
+            button.imageScaling = .scaleProportionallyUpOrDown
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
