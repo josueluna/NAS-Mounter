@@ -397,7 +397,7 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 6)
                 .stroke(Color.gray.opacity(0.15))
         )
-        .padding(.trailing, 12)
+        .padding(.trailing, 20)
         .padding(.bottom, 10)
         .popover(isPresented: $showAppMenu, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 12) {
@@ -435,7 +435,7 @@ struct ContentView: View {
                 Spacer()
 
                 SettingsPanelView(show: $showSettingsPanel)
-                    .frame(width: 260)
+                    .frame(width: 300)
                     .transition(.move(edge: .trailing))
             }
         }
