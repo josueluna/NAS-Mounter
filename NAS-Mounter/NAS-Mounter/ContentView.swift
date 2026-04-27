@@ -75,6 +75,7 @@ struct ContentView: View {
 
     @State private var showSettingsPanel = false
     @State private var showAppMenu = false
+    @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
 
     @State private var smbURL = ""
     @State private var username = ""
@@ -441,11 +442,37 @@ struct ContentView: View {
     }
 
     // MARK: - Actions
+    
+    private func canMountOnCurrentNetwork() -> Bool {
+        let allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
 
+        guard !allowedNetworks.isEmpty else {
+            return true
+        }
+
+        guard let currentSSID = NetworkHelper.currentSSID() else {
+            status = "Could not detect current Wi-Fi network."
+            isSuccess = false
+            return false
+        }
+
+        guard allowedNetworks.contains(currentSSID) else {
+            status = "Mounting blocked on this Wi-Fi network: \(currentSSID)"
+            isSuccess = false
+            return false
+        }
+
+        return true
+    }
+    
     func handleConnect() {
         guard !username.isEmpty, !password.isEmpty else {
             status = "Type user and password."
             isSuccess = false
+            return
+        }
+
+        guard canMountOnCurrentNetwork() else {
             return
         }
 
@@ -476,6 +503,10 @@ struct ContentView: View {
         guard !username.isEmpty, !password.isEmpty else {
             status = "Enter username and password first."
             isSuccess = false
+            return
+        }
+
+        guard canMountOnCurrentNetwork() else {
             return
         }
 

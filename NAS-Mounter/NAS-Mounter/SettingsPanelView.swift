@@ -6,8 +6,12 @@ struct SettingsPanelView: View {
     @Binding var show: Bool
 
     @AppStorage("runOnStartup") private var storedRunOnStartup = false
+    @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
 
     @State private var draftRunOnStartup = false
+    @State private var allowedNetworks: [String] = []
+    @State private var currentNetwork: String? = nil
+
     @State private var statusMessage = ""
     @State private var isError = false
 
@@ -21,7 +25,7 @@ struct SettingsPanelView: View {
             Divider()
                 .padding(.vertical, 16)
 
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 18) {
 
                 Toggle(isOn: $draftRunOnStartup) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -31,6 +35,67 @@ struct SettingsPanelView: View {
                         Text("Open NAS Mounter automatically when you log in.")
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
+                    }
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Allowed Wi-Fi networks")
+                        .font(.system(size: 13, weight: .semibold))
+
+                    Text("NAS Mounter will only mount shares when connected to one of these networks. If the list is empty, mounting is allowed on any network.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack {
+                        Text("Current network:")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+
+                        Text(currentNetwork ?? "Not detected")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(currentNetwork == nil ? .secondary : .primary)
+
+                        Spacer()
+                    }
+
+                    Button("Add current network") {
+                        addCurrentNetwork()
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(currentNetwork == nil)
+
+                    if allowedNetworks.isEmpty {
+                        Text("No networks added yet.")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
+                    } else {
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(allowedNetworks, id: \.self) { network in
+                                HStack {
+                                    Image(systemName: "wifi")
+                                        .foregroundColor(.blue)
+
+                                    Text(network)
+                                        .font(.system(size: 12))
+
+                                    Spacer()
+
+                                    Button {
+                                        removeNetwork(network)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        .padding(.top, 4)
                     }
                 }
 
@@ -73,6 +138,9 @@ struct SettingsPanelView: View {
     }
 
     private func loadCurrentSettings() {
+        currentNetwork = NetworkHelper.currentSSID()
+        allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
+
         if #available(macOS 13.0, *) {
             draftRunOnStartup = SMAppService.mainApp.status == .enabled
             storedRunOnStartup = draftRunOnStartup
@@ -88,7 +156,43 @@ struct SettingsPanelView: View {
         }
     }
 
+    private func addCurrentNetwork() {
+        guard let currentNetwork else {
+            statusMessage = "Current Wi-Fi network could not be detected."
+            isError = true
+            return
+        }
+
+        guard !allowedNetworks.contains(currentNetwork) else {
+            statusMessage = "\(currentNetwork) is already in the allowed list."
+            isError = false
+            return
+        }
+
+        allowedNetworks.append(currentNetwork)
+        allowedNetworks.sort()
+
+        statusMessage = "\(currentNetwork) added."
+        isError = false
+    }
+
+    private func removeNetwork(_ network: String) {
+        allowedNetworks.removeAll { $0 == network }
+
+        statusMessage = "\(network) removed."
+        isError = false
+    }
+
     private func saveSettings() {
+        saveStartupSetting()
+        storedAllowedWiFiNetworks = NetworkHelper.encodeNetworks(allowedNetworks)
+
+        withAnimation(.easeInOut(duration: 0.25)) {
+            show = false
+        }
+    }
+
+    private func saveStartupSetting() {
         if #available(macOS 13.0, *) {
             do {
                 if draftRunOnStartup {
@@ -97,8 +201,6 @@ struct SettingsPanelView: View {
                     }
 
                     storedRunOnStartup = true
-                    statusMessage = "Startup setting saved."
-                    isError = false
                 } else {
                     if SMAppService.mainApp.status == .enabled ||
                         SMAppService.mainApp.status == .requiresApproval {
@@ -106,12 +208,6 @@ struct SettingsPanelView: View {
                     }
 
                     storedRunOnStartup = false
-                    statusMessage = "Startup setting saved."
-                    isError = false
-                }
-
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    show = false
                 }
             } catch {
                 isError = true
