@@ -237,7 +237,8 @@ struct SettingsPanelView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
-        .frame(width: 380)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
         .background(Color(NSColor.windowBackgroundColor))
         .onAppear { loadCurrentSettings() }
         .animation(.easeInOut(duration: 0.2), value: allowedNetworks)

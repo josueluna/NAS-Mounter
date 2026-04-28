@@ -59,6 +59,7 @@ struct ContentView: View {
     @State private var showSettingsPanel = false
     @State private var showAppMenu = false
     @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
+    @AppStorage("lastMountedShares") private var storedLastMountedShares = "[]"
 
     @State private var smbURL    = ""
     @State private var username  = ""
@@ -84,23 +85,36 @@ struct ContentView: View {
         ZStack(alignment: .bottomTrailing) {
             mainContent
             appMenuButton
-
-            if showSettingsPanel {
-                settingsOverlay
-                    .transition(.opacity)
-                    .zIndex(10)
-            }
         }
         .fixedSize(horizontal: false, vertical: true)
+        .overlay(alignment: .center) {
+            if showSettingsPanel {
+                settingsOverlay
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
         .animation(.easeInOut(duration: 0.2), value: showSharePicker)
         .animation(.easeInOut(duration: 0.2), value: status)
         .animation(.easeInOut(duration: 0.25), value: showSettingsPanel)
         .onAppear {
+            // Reset success message every time popover opens
+            status = ""
+            isSuccess = false
+            isConnecting = false
+
             if let saved = KeychainHelper.load() {
                 smbURL   = saved.host
                 username = saved.username
                 password = saved.password
                 remember = true
+            }
+            // Pre-select last mounted shares
+            if let data = storedLastMountedShares.data(using: .utf8),
+               let shares = try? JSONDecoder().decode([String].self, from: data),
+               !shares.isEmpty {
+                selectedShares = Set(shares)
+                availableShares = shares
+                showSharePicker = true
             }
         }
     }
@@ -386,7 +400,8 @@ struct ContentView: View {
                 .padding(6)
         }
         .buttonStyle(.plain)
-        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.gray.opacity(0.15)))
+        .background(RoundedRectangle(cornerRadius: 6).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+        .contentShape(Rectangle())
         .padding(.trailing, 20)
         .padding(.bottom, 10)
         .popover(isPresented: $showAppMenu, arrowEdge: .bottom) {
@@ -437,10 +452,11 @@ struct ContentView: View {
     }
 
     // MARK: Settings overlay
+    // Uses same frame as mainContent so heights always match
 
     private var settingsOverlay: some View {
         SettingsPanelView(show: $showSettingsPanel)
-            .frame(width: 380)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.move(edge: .trailing))
     }
 
@@ -596,10 +612,16 @@ struct ContentView: View {
                     if self.remember {
                         KeychainHelper.save(host: self.smbURL, username: self.username, password: self.password)
                     }
+                    // Save last mounted shares for startup auto-mount
+                    if let encoded = try? JSONEncoder().encode(sharesToMount),
+                       let str = String(data: encoded, encoding: .utf8) {
+                        self.storedLastMountedShares = str
+                    }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                        if let delegate = NSApplication.shared.delegate as? AppDelegate {
-                            delegate.statusBar?.closePopover()
-                        } else { NSApp.hide(nil) }
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("NASMountieClosePopover"),
+                            object: nil
+                        )
                     }
                 } else {
                     self.isSuccess = false; self.status = mountErrors.joined(separator: "\n")
