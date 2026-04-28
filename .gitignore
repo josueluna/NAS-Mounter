@@ -1,21 +1,37 @@
-# Ignorar directorios específicos de Xcode
-
-NAS-Mountie/NAS-Mountie.xcodeproj/xcuserdata/
-NAS-Mountie/NAS-Mountie.xcodeproj/xcshareddata/xcuserdata
-
-# Ignorar archivos generados por macOS
-
-*.xcuserstate
-xcuserdata/
-**/xcuserdata/
+# macOS system files
 .DS_Store
-.xcuserstate
-NAS-Mountie/.DS_Store
-.xcuserstate
+.AppleDouble
+.LSOverride
 
-# Ignorar directorios específicos de Xcode
+# Xcode user-specific data
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad
 
-NAS-Mountie/NAS-Mountie.xcodeproj/xcuserdata/
-NAS-Mountie/NAS-Mountie.xcodeproj/xcshareddata/
-NAS-Mountie/NAS-Mountie.xcodeproj/project.xcworkspace/xcuserdata/josue.xcuserdatad/UserInterfaceState.xcuserstate
-NAS-Mountie/NAS-Mountie.xcodeproj/project.xcworkspace/xcuserdata/josue.xcuserdatad/UserInterfaceState.xcuserstate
+# Xcode workspace user data
+*.xcworkspace/xcuserdata/
+
+# Xcode project user data
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Xcode shared user-specific data
+*.xcodeproj/xcshareddata/xcuserdata/
+
+# Xcode build products
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# macOS app archives
+*.xcarchive
+
+# Logs
+*.log
