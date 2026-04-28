@@ -11,7 +11,7 @@
 
 **NAS-Mountie** is a lightweight macOS menu bar app for mounting SMB/NAS shares quickly, safely, and with as little friction as possible.
 
-It remembers your NAS profiles per Wi-Fi network, stores credentials securely in the macOS Keychain, and can automatically mount saved shares when your Mac connects to a known network.
+It remembers NAS connection profiles per Wi-Fi network, stores credentials securely in the macOS Keychain, and can automatically mount saved shares when your Mac connects to a known network.
 
 Mount your shares. Move on with your day.
 
@@ -19,15 +19,15 @@ Mount your shares. Move on with your day.
 
 ## Features
 
-- Mount SMB shares from a NAS using IP address or hostname
+- Mount SMB shares from a NAS using an IP address or hostname
 - Browse available shares from the connected NAS
 - Select and mount one or multiple shares
 - Save credentials securely in the macOS Keychain
 - Remember NAS connection profiles per Wi-Fi network
 - Auto-mount saved shares when connected to a known network
-- Separate mounted shares from selected shares for clearer status
-- Menu bar popover interface
-- Optional Dock icon setting
+- Keep mounted shares visually separate from selected shares
+- Use a compact macOS menu bar popover interface
+- Enable or disable the Dock icon from Settings
 - Launch at Login support
 - Lightweight, focused macOS UI
 
@@ -41,7 +41,7 @@ Mount your shares. Move on with your day.
 4. Select one or more shares.
 5. Click **Mount**.
 6. Optionally enable **Remember Password**.
-7. NAS-Mountie saves the profile for the current Wi-Fi network.
+7. NAS-Mountie saves the connection profile for the current Wi-Fi network.
 8. Next time you are on that network, saved shares can mount automatically.
 
 ---
@@ -53,8 +53,17 @@ NAS-Mountie remembers connection profiles by Wi-Fi network.
 For example:
 
 - On your home network, it can remember your home NAS and selected shares.
-- On another network, it will start with an empty form unless you save a separate profile there.
-- This avoids showing or mounting shares from the wrong network.
+- On another network, it starts with an empty form unless you save a separate profile there.
+- This helps avoid showing or mounting shares from the wrong network.
+
+A network profile can include:
+
+- Wi-Fi network name
+- NAS host or IP address
+- Username
+- Previously mounted shares
+
+Passwords are handled separately through the macOS Keychain.
 
 ---
 
@@ -82,33 +91,62 @@ Some features, such as Launch at Login, require modern macOS APIs.
 Clone the repository:
 
 ```bash
-git clone https://github.com/josueluna/NAS-Mountie.git# NAS Mounter
-[![Version](https://img.shields.io/github/v/release/josueluna/NAS-Mountie?logo=github)](https://github.com/josueluna/NAS-Mountie/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
-[![Beta](https://img.shields.io/badge/status-BETA-orange)](https://github.com/josueluna/NAS-Mountie)
-[![Platform](https://img.shields.io/badge/platform-macOS-blue)](https://developer.apple.com/macos/)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie)
-[![Issues](https://img.shields.io/github/issues/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie/issues)
-[![Contributors](https://img.shields.io/github/contributors/josueluna/NAS-Mountie)](https://github.com/josueluna/NAS-Mountie/graphs/contributors)
-[![Maintenance](https://img.shields.io/badge/maintenance-semi--active-yellow)](https://github.com/josueluna/NAS-Mountie)
+git clone https://github.com/josueluna/NAS-Mountie.git
+```
 
-NAS Mounter is a macOS application that allows users to easily mount SMB 
-shares using credentials saved in the system keychain. It provides a 
-simple interface to connect to NAS devices and manage shared resources.
-
-## Features
-- Mount SMB shares via IP or hostname
-- Save credentials securely in the Keychain for future use
-- Browse available shares from the connected NAS
-- Modern and simple UI
-
-## Requirements
-- macOS 10.15 or later
-- Network access to a NAS device with SMB sharing enabled
-
-## Installation
-
-1. Clone the repository:
+Open the project in Xcode:
 
 ```bash
-git clone https://github.com/josueluna/nas-mounter.git
+open NAS-Mountie/NAS-Mountie.xcodeproj
+```
+
+Build and run:
+
+```text
+Cmd + R
+```
+
+---
+
+## Create a local app build
+
+To create a local usable `.app`:
+
+1. In Xcode, set the scheme to **Release**.
+2. Build the project.
+3. Go to **Product > Show Build Folder in Finder**.
+4. Open `Products/Release`.
+5. Copy `NAS-Mountie.app` to `/Applications`.
+
+---
+
+## Current status
+
+NAS-Mountie is currently in beta.
+
+The app is stable enough for daily local testing, but features and UI details may continue to change.
+
+---
+
+## Roadmap
+
+- App icon and custom menu bar icon polish
+- Cleaner release packaging
+- GitHub Releases
+- Improved settings management
+- Better network profile management UI
+- Optional unmount/disconnect actions
+- Additional SMB validation and error handling
+- More detailed mount status feedback
+
+---
+
+## Author
+
+Developed by [Josué Luna](https://www.linkedin.com/in/josuelunagamboa/).
+
+---
+
+## License
+
+This project is licensed under the MIT License.
