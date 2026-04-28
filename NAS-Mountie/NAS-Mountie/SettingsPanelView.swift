@@ -65,11 +65,12 @@ struct SettingsPanelView: View {
                             HStack(alignment: .center, spacing: iconSpacing) {
                                 iconBadge("wifi")
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text("Allowed Wi-Fi Networks")
-                                        .font(Brand.headline())
+                                    Text("Network Profiles")
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.primary)
-                                    Text("Only mount shares on these networks. Empty = any network.")
-                                        .font(Brand.caption())
+
+                                    Text("Save NAS connection profiles per Wi-Fi network. NAS-Mountie will auto-mount saved shares when it recognizes this network.")
+                                        .font(.system(size: 11))
                                         .foregroundColor(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
@@ -98,11 +99,11 @@ struct SettingsPanelView: View {
                                     HStack(spacing: 4) {
                                         Image(systemName: "plus")
                                             .font(.system(size: 10, weight: .semibold))
-                                        Text("Add")
-                                            .font(Brand.caption(11))
+                                        Text("Save Profile")
+                                            .font(.system(size: 11, weight: .medium))
                                     }
                                     .foregroundColor(currentNetwork == nil ? .secondary : Brand.primary)
-                                    .padding(.horizontal, 10)
+                                    .padding(.horizontal, 9)
                                     .padding(.vertical, 5)
                                     .background(
                                         RoundedRectangle(cornerRadius: Brand.radiusSmall)
@@ -113,6 +114,20 @@ struct SettingsPanelView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .disabled(currentNetwork == nil)
+                            }
+                            
+                            if !statusMessage.isEmpty {
+                                HStack(spacing: 6) {
+                                    Image(systemName: isError ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(isError ? .red : Brand.primary)
+                                    Text(statusMessage)
+                                        .font(Brand.caption())
+                                        .foregroundColor(isError ? .red : .secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(.horizontal, 4)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                             
                             VStack(alignment: .leading, spacing: 0) {
@@ -195,20 +210,6 @@ struct SettingsPanelView: View {
                                 .padding(.trailing, 2)
                         }
                     }
-                    
-                    if !statusMessage.isEmpty {
-                        HStack(spacing: 6) {
-                            Image(systemName: isError ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
-                                .font(.system(size: 11))
-                                .foregroundColor(isError ? .red : Brand.primary)
-                            Text(statusMessage)
-                                .font(Brand.caption())
-                                .foregroundColor(isError ? .red : .secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.horizontal, 4)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
@@ -279,10 +280,22 @@ struct SettingsPanelView: View {
     }
     
     private func addCurrentNetwork() {
-        guard let currentNetwork else { showStatus("Network could not be detected.", error: true); return }
-        guard !allowedNetworks.contains(currentNetwork) else { showStatus("\(currentNetwork) is already in the list."); return }
-        withAnimation { allowedNetworks.append(currentNetwork); allowedNetworks.sort() }
-        showStatus("\(currentNetwork) added.")
+        guard let currentNetwork else {
+            showStatus("Network could not be detected.", error: true)
+            return
+        }
+
+        guard !allowedNetworks.contains(currentNetwork) else {
+            showStatus("A profile for \(currentNetwork) already exists.")
+            return
+        }
+
+        withAnimation {
+            allowedNetworks.append(currentNetwork)
+            allowedNetworks.sort()
+        }
+
+        showStatus("Profile saved for \(currentNetwork).")
     }
     
     private func removeNetwork(_ network: String) {
