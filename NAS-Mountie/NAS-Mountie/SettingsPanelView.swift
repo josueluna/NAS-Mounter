@@ -46,7 +46,7 @@ struct SettingsPanelView: View {
                                 Text("Launch at Login")
                                     .font(Brand.headline())
                                     .foregroundColor(.primary)
-                                Text("Open NAS Mountie automatically when you log in.")
+                                Text("Open NAS-Mountie automatically when you log in.")
                                     .font(Brand.caption())
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -181,7 +181,7 @@ struct SettingsPanelView: View {
                                     .font(Brand.headline())
                                     .foregroundColor(.primary)
 
-                                Text("Show NAS Mountie in the macOS Dock.")
+                                Text("Show NAS-Mountie in the macOS Dock.")
                                     .font(Brand.caption())
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)

@@ -123,7 +123,7 @@ struct ContentView: View {
     }
 
     // MARK: Header
-    // Brand change: logo asset + "NAS Mountie" name + default (not rounded) font
+    // Brand change: logo asset + "NAS-Mountie" name + default (not rounded) font
 
     private var headerView: some View {
         HStack(spacing: 10) {
@@ -420,7 +420,7 @@ struct ContentView: View {
                         Image(systemName: "power")
                             .font(.system(size: 12))
                             .foregroundColor(.red)
-                        Text("Quit NAS Mountie")
+                        Text("Quit NAS-Mountie")
                             .font(Brand.body())
                             .foregroundColor(.red)
                     }
