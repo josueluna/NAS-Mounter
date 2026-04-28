@@ -62,22 +62,27 @@ final class StartupMountManager {
     }
     
     private func mountLastSharesSilentlyIfAllowed() {
+        guard let currentSSID = NetworkHelper.currentSSID() else { return }
+
+        guard let profile = NetworkProfileManager.profile(for: currentSSID) else {
+            return
+        }
+
         guard let credentials = KeychainHelper.load() else { return }
-        guard let host = parsedHost(from: credentials.host) else { return }
-        
-        let shares = lastMountedShares()
+
+        guard let host = parsedHost(from: profile.host) else { return }
+
+        let shares = profile.shares
         guard !shares.isEmpty else { return }
-        
-        // Check allowed networks — if list is empty, any network is allowed
-        guard isAllowedOnCurrentNetwork() else { return }
-        
+
         let encodedUser =
-        credentials.username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
-        ?? credentials.username
+        profile.username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
+        ?? profile.username
+
         let encodedPass =
         credentials.password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed)
         ?? credentials.password
-        
+
         DispatchQueue.global(qos: .background).async {
             for share in shares {
                 let fullURL = "smb://\(encodedUser):\(encodedPass)@\(host)/\(share)"
@@ -92,25 +97,6 @@ final class StartupMountManager {
                 NSAppleScript(source: script)?.executeAndReturnError(nil)
             }
         }
-    }
-    
-    private func lastMountedShares() -> [String] {
-        let storedShares = defaults.string(forKey: "lastMountedShares") ?? "[]"
-        guard let data = storedShares.data(using: .utf8),
-              let shares = try? JSONDecoder().decode([String].self, from: data)
-        else { return [] }
-        return shares
-    }
-    
-    private func isAllowedOnCurrentNetwork() -> Bool {
-        let allowedNetworksRaw = defaults.string(forKey: "allowedWiFiNetworks") ?? "[]"
-        let allowedNetworks = NetworkHelper.decodeNetworks(from: allowedNetworksRaw)
-        
-        // Empty list = mount on any network
-        guard !allowedNetworks.isEmpty else { return true }
-        
-        guard let currentSSID = NetworkHelper.currentSSID() else { return false }
-        return allowedNetworks.contains(currentSSID)
     }
     
     private func parsedHost(from rawHost: String) -> String? {
