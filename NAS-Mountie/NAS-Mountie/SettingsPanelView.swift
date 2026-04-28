@@ -2,12 +2,12 @@ import SwiftUI
 import ServiceManagement
 
 struct SettingsPanelView: View {
-
+    
     @Binding var show: Bool
-
+    
     @AppStorage("runOnStartup") private var storedRunOnStartup = false
     @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
-    @AppStorage("showDockIcon") private var storedShowDockIcon = false
+    @AppStorage("showDockIcon") private var storedShowDockIcon = true
     
     @State private var draftShowDockIcon = false
     @State private var draftRunOnStartup = false
@@ -15,29 +15,29 @@ struct SettingsPanelView: View {
     @State private var currentNetwork: String? = nil
     @State private var statusMessage = ""
     @State private var isError = false
-
+    
     private let iconSize: CGFloat = 28
     private let iconSpacing: CGFloat = 12
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-
+            
             // ── Header ──────────────────────────────
             HStack(alignment: .center) {
                 Text("Settings")
                     .font(Brand.headline(16))
                     .foregroundColor(.primary)
                 Spacer()
-
+                
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 14)
-
+            
             // ── Content ──────────────────────────────
             ScrollView {
                 VStack {
-
+                    
                     // Card: Launch at Login
                     SettingsCard {
                         HStack(alignment: .center, spacing: iconSpacing) {
@@ -58,7 +58,7 @@ struct SettingsPanelView: View {
                                 .padding(.trailing, 2)
                         }
                     }
-
+                    
                     // Card: Wi-Fi Networks
                     SettingsCard {
                         VStack(alignment: .leading, spacing: 12) {
@@ -74,9 +74,9 @@ struct SettingsPanelView: View {
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
-
+                            
                             Divider().padding(.leading, iconSize + iconSpacing)
-
+                            
                             HStack(alignment: .center, spacing: iconSpacing) {
                                 ZStack {
                                     Image(systemName: currentNetwork != nil ? "wifi.circle.fill" : "wifi.slash")
@@ -84,7 +84,7 @@ struct SettingsPanelView: View {
                                         .foregroundColor(currentNetwork != nil ? Brand.primary : .secondary)
                                 }
                                 .frame(width: iconSize, height: iconSize)
-
+                                
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("Current network")
                                         .font(Brand.caption(10))
@@ -114,7 +114,7 @@ struct SettingsPanelView: View {
                                 .buttonStyle(.plain)
                                 .disabled(currentNetwork == nil)
                             }
-
+                            
                             VStack(alignment: .leading, spacing: 0) {
                                 if allowedNetworks.isEmpty {
                                     HStack {
@@ -170,25 +170,25 @@ struct SettingsPanelView: View {
                             .padding(.leading, iconSize + iconSpacing)
                         }
                     }
-
+                    
                     // Card: Show Dock Icon
                     SettingsCard {
                         HStack(alignment: .center, spacing: iconSpacing) {
                             iconBadge("dock.rectangle")
-
+                            
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Show Dock Icon")
                                     .font(Brand.headline())
                                     .foregroundColor(.primary)
-
+                                
                                 Text("Show NAS-Mountie in the macOS Dock.")
                                     .font(Brand.caption())
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-
+                            
                             Spacer()
-
+                            
                             Toggle("", isOn: $draftShowDockIcon)
                                 .labelsHidden()
                                 .scaleEffect(0.8)
@@ -213,9 +213,9 @@ struct SettingsPanelView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
             }
-
+            
             Divider()
-
+            
             HStack(spacing: 8) {
                 Button("Cancel") {
                     withAnimation(.easeInOut(duration: 0.25)) { show = false }
@@ -244,7 +244,7 @@ struct SettingsPanelView: View {
         .animation(.easeInOut(duration: 0.2), value: allowedNetworks)
         .animation(.easeInOut(duration: 0.2), value: statusMessage)
     }
-
+    
     @ViewBuilder
     private func iconBadge(_ systemName: String) -> some View {
         Image(systemName: systemName)
@@ -253,14 +253,14 @@ struct SettingsPanelView: View {
             .frame(width: iconSize, height: iconSize)
             .background(RoundedRectangle(cornerRadius: 7).fill(Brand.primaryLight))
     }
-
+    
     private func showStatus(_ message: String, error: Bool = false) {
         statusMessage = message; isError = error
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             withAnimation(.easeOut(duration: 0.3)) { statusMessage = "" }
         }
     }
-
+    
     private func loadCurrentSettings() {
         currentNetwork = NetworkHelper.currentSSID()
         allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
@@ -277,32 +277,32 @@ struct SettingsPanelView: View {
             showStatus("Launch at Login requires macOS 13 or later.", error: true)
         }
     }
-
+    
     private func addCurrentNetwork() {
         guard let currentNetwork else { showStatus("Network could not be detected.", error: true); return }
         guard !allowedNetworks.contains(currentNetwork) else { showStatus("\(currentNetwork) is already in the list."); return }
         withAnimation { allowedNetworks.append(currentNetwork); allowedNetworks.sort() }
         showStatus("\(currentNetwork) added.")
     }
-
+    
     private func removeNetwork(_ network: String) {
         withAnimation { allowedNetworks.removeAll { $0 == network } }
         showStatus("\(network) removed.")
     }
-
+    
     private func saveSettings() {
         saveStartupSetting()
-
+        
         storedShowDockIcon = draftShowDockIcon
         NSApp.setActivationPolicy(draftShowDockIcon ? .regular : .accessory)
-
+        
         storedAllowedWiFiNetworks = NetworkHelper.encodeNetworks(allowedNetworks)
-
+        
         withAnimation(.easeInOut(duration: 0.25)) {
             show = false
         }
     }
-
+    
     private func saveStartupSetting() {
         if #available(macOS 13.0, *) {
             do {

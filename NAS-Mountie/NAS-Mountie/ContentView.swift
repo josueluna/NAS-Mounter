@@ -5,7 +5,7 @@ import Security
 
 struct KeychainHelper {
     static let service = "com.nasmounter.credentials"
-
+    
     static func save(host: String, username: String, password: String) {
         let data: [String: String] = ["host": host, "username": username, "password": password]
         guard let encoded = try? JSONEncoder().encode(data) else { return }
@@ -22,7 +22,7 @@ struct KeychainHelper {
             SecItemAdd(newItem as CFDictionary, nil)
         }
     }
-
+    
     static func load() -> (host: String, username: String, password: String)? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -41,7 +41,7 @@ struct KeychainHelper {
         else { return nil }
         return (host, username, password)
     }
-
+    
     static func delete() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -55,32 +55,42 @@ struct KeychainHelper {
 // MARK: - Main View
 
 struct ContentView: View {
-
+    
     @State private var showSettingsPanel = false
     @State private var showAppMenu = false
     @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
     @AppStorage("lastMountedShares") private var storedLastMountedShares = "[]"
-
-    @State private var smbURL    = ""
-    @State private var username  = ""
-    @State private var password  = ""
-    @State private var remember  = false
-
+    
+    @State private var smbURL       = ""
+    @State private var username     = ""
+    @State private var password     = ""
+    @State private var showPassword = false
+    @State private var remember     = false
+    
     @State private var status        = ""
     @State private var isConnecting  = false
     @State private var isSuccess     = false
-
+    
     @State private var availableShares: [String] = []
     @State private var selectedShares: Set<String> = []
+    @State private var mountedShares: [String] = []
     @State private var showSharePicker  = false
     @State private var isFetchingShares = false
-
+    
+    @FocusState private var focusedField: Field?
+    
+    private enum Field {
+        case smb
+        case username
+        case password
+    }
+    
     private var extractedHost: String {
         let raw = smbURL.trimmingCharacters(in: .whitespaces)
         let withScheme = raw.lowercased().hasPrefix("smb://") ? raw : "smb://\(raw)"
         return URL(string: withScheme)?.host ?? ""
     }
-
+    
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             mainContent
@@ -97,34 +107,38 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.2), value: status)
         .animation(.easeInOut(duration: 0.25), value: showSettingsPanel)
         .onAppear {
-            // Reset success message every time popover opens
+            DispatchQueue.main.async {
+                focusedField = nil
+            }
+            
             status = ""
             isSuccess = false
             isConnecting = false
 
-            if let saved = KeychainHelper.load() {
-                smbURL   = saved.host
-                username = saved.username
-                password = saved.password
-                remember = true
+            loadProfileForCurrentNetwork()
+            refreshMountedShares()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NASMountiePopoverDidOpen"))) { _ in
+            DispatchQueue.main.async {
+                focusedField = nil
             }
-            // Pre-select last mounted shares
-            if let data = storedLastMountedShares.data(using: .utf8),
-               let shares = try? JSONDecoder().decode([String].self, from: data),
-               !shares.isEmpty {
-                selectedShares = Set(shares)
-                availableShares = shares
-                showSharePicker = true
-            }
+            
+            status = ""
+            isSuccess = false
+            isConnecting = false
+
+            loadProfileForCurrentNetwork()
+            refreshMountedShares()
         }
     }
-
+    
     // MARK: Main content
-
+    
     private var mainContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             headerView
             fieldsView
+            mountedSharesView
             sharePickerView
             rememberPasswordView
             connectButton
@@ -135,10 +149,10 @@ struct ContentView: View {
         .padding(.bottom, 40)
         .frame(width: 380)
     }
-
+    
     // MARK: Header
     // Brand change: logo asset + "NAS-Mountie" name + default (not rounded) font
-
+    
     private var headerView: some View {
         HStack(spacing: 10) {
             // Uses LogoInApp asset from Assets.xcassets
@@ -156,18 +170,22 @@ struct ContentView: View {
         }
         .padding(.bottom, 20)
     }
-
+    
     // MARK: Fields
     // Brand change: blue → Brand.primary on borders and browse button
-
+    
     private var fieldsView: some View {
         VStack(spacing: 12) {
             FieldRow(label: "SMB") {
                 HStack(spacing: 6) {
                     TextField("192.168.X.X or 192.168.X.X/Share", text: $smbURL)
                         .textFieldStyle(.plain)
+                        .focused($focusedField, equals: .smb)
+                        .onSubmit {
+                            handleConnect()
+                        }
                         .styledField()
-
+                    
                     Button { fetchShares() } label: {
                         Group {
                             if isFetchingShares {
@@ -195,25 +213,113 @@ struct ContentView: View {
                     .help("Browse available shares")
                 }
             }
-
+            
             FieldRow(label: "User") {
                 TextField("Username", text: $username)
                     .textFieldStyle(.plain)
+                    .focused($focusedField, equals: .username)
+                    .onSubmit {
+                        handleConnect()
+                    }
                     .styledField()
             }
-
+            
             FieldRow(label: "Password") {
-                SecureField("Password — press Enter to connect", text: $password)
-                    .textFieldStyle(.plain)
-                    .styledField()
-                    .onSubmit { handleConnect() }
+                HStack(spacing: 6) {
+                    Group {
+                        if showPassword {
+                            TextField("Password — press Enter to mount", text: $password)
+                                .textFieldStyle(.plain)
+                                .focused($focusedField, equals: .password)
+                                .onSubmit { handleConnect() }
+                        } else {
+                            SecureField("Password — press Enter to mount", text: $password)
+                                .textFieldStyle(.plain)
+                                .focused($focusedField, equals: .password)
+                                .onSubmit { handleConnect() }
+                        }
+                    }
+                    
+                    Button {
+                        showPassword.toggle()
+                    } label: {
+                        Image(systemName: showPassword ? "eye" : "eye.slash")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .frame(width: 22, height: 22)
+                    }
+                    .buttonStyle(.plain)
+                    .help(showPassword ? "Hide password" : "Show password")
+                }
+                .styledField()
             }
         }
     }
+    
+    // MARK: Mounted shares
 
+    @ViewBuilder
+    private var mountedSharesView: some View {
+        if !mountedShares.isEmpty && !showSharePicker {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Mounted shares")
+                        .font(Brand.caption())
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text("\(mountedShares.count) mounted")
+                        .font(Brand.caption())
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 12)
+
+                VStack(spacing: 0) {
+                    ForEach(mountedShares, id: \.self) { share in
+                        HStack(spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(Brand.primary)
+                                .font(.system(size: 13))
+
+                            Image("TBIcon")
+                                .renderingMode(.template)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14, height: 14)
+                                .foregroundColor(Brand.primary)
+
+                            Text(share)
+                                .font(Brand.body())
+                                .foregroundColor(.primary)
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(Brand.primaryLight)
+
+                        if share != mountedShares.last {
+                            Divider().padding(.leading, 10)
+                        }
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: Brand.radiusMedium)
+                        .fill(Color(NSColor.controlBackgroundColor))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: Brand.radiusMedium)
+                                .strokeBorder(Brand.primaryBorder, lineWidth: 1)
+                        )
+                )
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+    }
+    
     // MARK: Share picker
     // Brand change: blue checkmarks and borders → Brand.primary
-
+    
     @ViewBuilder
     private var sharePickerView: some View {
         if showSharePicker {
@@ -230,7 +336,7 @@ struct ContentView: View {
                     }
                 }
                 .padding(.top, 12)
-
+                
                 if isFetchingShares {
                     HStack {
                         Spacer()
@@ -262,33 +368,33 @@ struct ContentView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: selectedShares.contains(share)
                                               ? "checkmark.circle.fill" : "circle")
-                                            .foregroundColor(Brand.primary)
-                                            .font(.system(size: 13))
-
+                                        .foregroundColor(Brand.primary)
+                                        .font(.system(size: 13))
+                                        
                                         Image("TBIcon")
                                             .renderingMode(.template)
                                             .resizable()
                                             .scaledToFit()
                                             .frame(width: 14, height: 14)
                                             .foregroundColor(Brand.primary)
-
+                                        
                                         Text(share)
                                             .font(Brand.body())
                                             .foregroundColor(.primary)
-
+                                        
                                         Spacer()
                                     }
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 8)
                                     .background(
                                         selectedShares.contains(share)
-                                            ? Brand.primaryLight
-                                            : Color.clear
+                                        ? Brand.primaryLight
+                                        : Color.clear
                                     )
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
-
+                                
                                 if share != availableShares.last {
                                     Divider().padding(.leading, 10)
                                 }
@@ -309,10 +415,10 @@ struct ContentView: View {
             .transition(.opacity.combined(with: .move(edge: .top)))
         }
     }
-
+    
     // MARK: Remember password
     // Brand change: checkbox uses Brand.primary
-
+    
     private var rememberPasswordView: some View {
         Toggle(isOn: $remember) {
             Text("Remember Password")
@@ -325,10 +431,10 @@ struct ContentView: View {
             if !newValue { KeychainHelper.delete() }
         }
     }
-
+    
     // MARK: Connect button
     // Brand change: blue fill → Brand.primary (Forest Green)
-
+    
     private var connectButton: some View {
         Button(action: handleConnect) {
             HStack(spacing: 8) {
@@ -337,7 +443,7 @@ struct ContentView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.75)
                 }
-                Text(isConnecting ? "Connecting…" : "Connect")
+                Text(isConnecting ? "Mounting…" : "Mount")
                     .font(Brand.headline(15))
             }
             .frame(maxWidth: .infinity, minHeight: 40)
@@ -351,9 +457,9 @@ struct ContentView: View {
         .disabled(isConnecting)
         .padding(.top, 16)
     }
-
+    
     // MARK: Status view
-
+    
     @ViewBuilder
     private var statusView: some View {
         if !status.isEmpty {
@@ -386,10 +492,10 @@ struct ContentView: View {
             }
         }
     }
-
+    
     // MARK: App menu button
     // Brand change: popover items use Brand.primary tint on hover
-
+    
     private var appMenuButton: some View {
         Button {
             showAppMenu.toggle()
@@ -425,9 +531,9 @@ struct ContentView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-
+                
                 Divider().padding(.horizontal, 8)
-
+                
                 Button {
                     NSApp.terminate(nil)
                 } label: {
@@ -450,34 +556,158 @@ struct ContentView: View {
             .frame(width: 180)
         }
     }
-
+    
     // MARK: Settings overlay
     // Uses same frame as mainContent so heights always match
-
+    
     private var settingsOverlay: some View {
         SettingsPanelView(show: $showSettingsPanel)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.move(edge: .trailing))
     }
-
+    
     // MARK: - Actions
+    
+    private func lastMountedShares() -> [String] {
+        guard let data = storedLastMountedShares.data(using: .utf8),
+              let shares = try? JSONDecoder().decode([String].self, from: data)
+        else {
+            return []
+        }
+        
+        return shares
+    }
+    
+    private func restoreLastMountedShares() {
+        let shares = lastMountedShares()
+        
+        guard !shares.isEmpty else {
+            selectedShares = []
+            availableShares = []
+            showSharePicker = false
+            return
+        }
+        
+        let host = extractedHost
+        
+        guard !host.isEmpty else {
+            selectedShares = []
+            availableShares = []
+            showSharePicker = false
+            return
+        }
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            let reachable = isSMBHostReachable(host)
+            
+            DispatchQueue.main.async {
+                if reachable {
+                    selectedShares = Set(shares)
+                    availableShares = shares
+                    showSharePicker = true
+                } else {
+                    selectedShares = []
+                    availableShares = []
+                    showSharePicker = false
+                    status = "Saved shares hidden because NAS is not reachable on this network."
+                    isSuccess = false
+                }
+            }
+        }
+    }
+    
+    private func sortedSharesWithSelectedFirst(_ shares: [String], selected: Set<String>) -> [String] {
+        shares.sorted { left, right in
+            let leftIsSelected = selected.contains(left)
+            let rightIsSelected = selected.contains(right)
+            
+            if leftIsSelected != rightIsSelected {
+                return leftIsSelected && !rightIsSelected
+            }
+            
+            return left.localizedCaseInsensitiveCompare(right) == .orderedAscending
+        }
+    }
+    
+    private func refreshMountedShares() {
+        let mountedVolumeNames = (try? FileManager.default.contentsOfDirectory(
+            atPath: "/Volumes"
+        )) ?? []
 
-    private func canMountOnCurrentNetwork() -> Bool {
-        let allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
-        guard !allowedNetworks.isEmpty else { return true }
+        let knownShares = Set(selectedShares).union(Set(lastMountedShares()))
+
+        mountedShares = knownShares
+            .filter { mountedVolumeNames.contains($0) }
+            .sorted {
+                $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+            }
+    }
+    
+    private func clearNetworkProfileFields() {
+        smbURL = ""
+        username = ""
+        password = ""
+        remember = false
+        
+        selectedShares = []
+        availableShares = []
+        showSharePicker = false
+        
+        status = ""
+        isSuccess = false
+    }
+    
+    private func loadProfileForCurrentNetwork() {
         guard let currentSSID = NetworkHelper.currentSSID() else {
-            status = "Could not detect current Wi-Fi network."
+            clearNetworkProfileFields()
+            status = "Current Wi-Fi network could not be detected."
             isSuccess = false
+            return
+        }
+        
+        guard let profile = NetworkProfileManager.profile(for: currentSSID) else {
+            clearNetworkProfileFields()
+            status = ""
+            return
+        }
+        
+        smbURL = profile.host
+        username = profile.username
+        
+        if let saved = KeychainHelper.load() {
+            password = saved.password
+            remember = true
+        } else {
+            password = ""
+            remember = false
+        }
+        
+        selectedShares = Set(profile.shares)
+        availableShares = []
+        showSharePicker = false
+        
+        status = ""
+        isSuccess = false
+    }
+    
+    private func isSMBHostReachable(_ host: String) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
+        process.arguments = ["-z", "-G", "2", host, "445"]
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
             return false
         }
-        guard allowedNetworks.contains(currentSSID) else {
-            status = "Mounting blocked on this network: \(currentSSID)"
-            isSuccess = false
-            return false
-        }
+    }
+    
+    private func canMountOnCurrentNetwork() -> Bool {
         return true
     }
-
+    
     func handleConnect() {
         guard !username.isEmpty, !password.isEmpty else {
             status = "Enter username and password."
@@ -491,6 +721,13 @@ struct ContentView: View {
             isSuccess = false
             return
         }
+        
+        guard isSMBHostReachable(host) else {
+            status = "NAS is not reachable on this network."
+            isSuccess = false
+            return
+        }
+        
         let hasShareInURL: Bool = {
             let raw = smbURL.trimmingCharacters(in: .whitespaces)
             let withScheme = raw.lowercased().hasPrefix("smb://") ? raw : "smb://\(raw)"
@@ -503,7 +740,7 @@ struct ContentView: View {
         }
         mountShares()
     }
-
+    
     func fetchShares() {
         guard !username.isEmpty, !password.isEmpty else {
             status = "Enter username and password first."
@@ -520,12 +757,11 @@ struct ContentView: View {
         isFetchingShares = true
         showSharePicker  = true
         availableShares  = []
-        selectedShares   = []
         status           = ""
-
+        
         let encodedUser = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed) ?? username
         let encodedPass = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed) ?? password
-
+        
         DispatchQueue.global(qos: .userInitiated).async {
             let task = Process()
             task.launchPath = "/usr/bin/smbutil"
@@ -535,7 +771,7 @@ struct ContentView: View {
             task.launch(); task.waitUntilExit()
             let output = String(data: outPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
             let errOut = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-
+            
             if task.terminationStatus != 0 || output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 let msg = errOut.trimmingCharacters(in: .whitespacesAndNewlines)
                 DispatchQueue.main.async {
@@ -558,12 +794,20 @@ struct ContentView: View {
                 if shares.isEmpty {
                     self.status = "No shares found."; self.isSuccess = false; self.showSharePicker = false
                 } else {
-                    self.availableShares = shares; self.showSharePicker = true
+                    let savedShares = Set(self.lastMountedShares())
+                    let validSavedShares = savedShares.intersection(Set(shares))
+                    
+                    self.selectedShares = validSavedShares
+                    self.availableShares = self.sortedSharesWithSelectedFirst(
+                        shares,
+                        selected: validSavedShares
+                    )
+                    self.showSharePicker = true
                 }
             }
         }
     }
-
+    
     func mountShares() {
         let host = extractedHost
         var sharesToMount: [String] = []
@@ -582,7 +826,7 @@ struct ContentView: View {
         isConnecting = true; status = ""; isSuccess = false
         let encodedUser = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed) ?? username
         let encodedPass = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed) ?? password
-
+        
         DispatchQueue.global(qos: .userInitiated).async {
             var mountErrors: [String] = []
             for share in sharesToMount {
@@ -608,7 +852,15 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 self.isConnecting = false
                 if mountErrors.isEmpty {
-                    self.isSuccess = true; self.status = "ok"; self.showSharePicker = false
+                    self.isSuccess = true; self.status = "ok"
+                    if let currentSSID = NetworkHelper.currentSSID() {
+                        NetworkProfileManager.saveProfile(
+                            ssid: currentSSID,
+                            host: self.smbURL,
+                            username: self.username,
+                            shares: sharesToMount
+                        )
+                    }
                     if self.remember {
                         KeychainHelper.save(host: self.smbURL, username: self.username, password: self.password)
                     }
@@ -616,8 +868,14 @@ struct ContentView: View {
                     if let encoded = try? JSONEncoder().encode(sharesToMount),
                        let str = String(data: encoded, encoding: .utf8) {
                         self.storedLastMountedShares = str
+                        self.selectedShares = Set(sharesToMount)
+                        self.availableShares = sharesToMount
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        self.status = ""
+                        self.isSuccess = false
+                        
                         NotificationCenter.default.post(
                             name: NSNotification.Name("NASMountieClosePopover"),
                             object: nil

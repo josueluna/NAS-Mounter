@@ -41,6 +41,11 @@ class StatusBarController {
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+
+            NotificationCenter.default.post(
+                name: NSNotification.Name("NASMountiePopoverDidOpen"),
+                object: nil
+            )
         }
     }
 

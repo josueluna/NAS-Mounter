@@ -11,7 +11,10 @@
 		CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */; };
 		CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */; };
 		CA1C3E722F9F351200A98A89 /* NetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */; };
+		CA24D2D82FA14171002A879B /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA24D2D72FA14171002A879B /* Network.framework */; };
+		CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */; };
 		CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B2B1C2FA012A100273FBB /* Brandkit.swift */; };
+		CA74DC1E2FA1453100CF08E5 /* StartupMountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */; };
 		CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */; };
 		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
 		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
@@ -45,7 +48,10 @@
 		CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanelView.swift; sourceTree = "<group>"; };
 		CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHelper.swift; sourceTree = "<group>"; };
+		CA24D2D72FA14171002A879B /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProfileManager.swift; sourceTree = "<group>"; };
 		CA5B2B1C2FA012A100273FBB /* Brandkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brandkit.swift; sourceTree = "<group>"; };
+		CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupMountManager.swift; sourceTree = "<group>"; };
 		CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		CAD2502C2F92C56B00D85C6F /* NAS-Mountie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mountie.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
@@ -65,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA24D2D82FA14171002A879B /* Network.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,15 +92,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CA24D2D62FA14171002A879B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CA24D2D72FA14171002A879B /* Network.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CAD250232F92C56A00D85C6F = {
 			isa = PBXGroup;
 			children = (
 				CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */,
+				CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */,
 				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
 				CAD2502E2F92C56B00D85C6F /* NAS-Mountie */,
 				CAD250402F92C57000D85C6F /* NAS-MountieTests */,
 				CAD2504A2F92C57000D85C6F /* NAS-MountieUITests */,
 				CAD2502D2F92C56B00D85C6F /* Products */,
+				CA24D2D62FA14171002A879B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -110,16 +127,17 @@
 		CAD2502E2F92C56B00D85C6F /* NAS-Mountie */ = {
 			isa = PBXGroup;
 			children = (
+				CAD250332F92C56F00D85C6F /* Assets.xcassets */,
+				CA5B2B1C2FA012A100273FBB /* Brandkit.swift */,
+				CAD250312F92C56B00D85C6F /* ContentView.swift */,
 				CA0F01492F93099F0020A2BC /* Info.plist */,
 				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
-				CAD250312F92C56B00D85C6F /* ContentView.swift */,
-				CAD250332F92C56F00D85C6F /* Assets.xcassets */,
 				CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */,
 				CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */,
-				CAD250362F92C56F00D85C6F /* Preview Content */,
 				CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */,
 				CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */,
-				CA5B2B1C2FA012A100273FBB /* Brandkit.swift */,
+				CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */,
+				CAD250362F92C56F00D85C6F /* Preview Content */,
 			);
 			path = "NAS-Mountie";
 			sourceTree = "<group>";
@@ -282,10 +300,12 @@
 				CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */,
 				CA1C3E722F9F351200A98A89 /* NetworkHelper.swift in Sources */,
 				CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */,
+				CA74DC1E2FA1453100CF08E5 /* StartupMountManager.swift in Sources */,
 				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
 				CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */,
 				CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */,
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
+				CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
