@@ -71,7 +71,7 @@ All notable changes to this project will be documented in this file.
 - Basic SMB share mounting functionality.
 - Keychain integration to save credentials securely.
 - UI for connecting to a NAS.
-- Basic browse flow for available SMB shares.# Changelog
+- Basic browse flow for available SMB shares.
 
 ## [v0.1] - 2026-04-17
 ### Added
