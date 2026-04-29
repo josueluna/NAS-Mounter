@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CA0585E12FA2A11C00A0D374 /* StartupMountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */; };
 		CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F01472F92F1A90020A2BC /* AppDelegate.swift */; };
 		CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */; };
 		CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */; };
@@ -44,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupMountManager.swift; sourceTree = "<group>"; };
 		CA0F01472F92F1A90020A2BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA0F01492F93099F0020A2BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 				CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */,
 				CAD250312F92C56B00D85C6F /* ContentView.swift */,
 				CA0F01492F93099F0020A2BC /* Info.plist */,
+				CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */,
 				CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */,
 				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
 				CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */,
@@ -308,6 +311,7 @@
 				CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */,
 				CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */,
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
+				CA0585E12FA2A11C00A0D374 /* StartupMountManager.swift in Sources */,
 				CA2EFCFF2FA19A380069EC2C /* ChangelogPanelView.swift in Sources */,
 				CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
