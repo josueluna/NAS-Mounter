@@ -57,7 +57,9 @@ struct KeychainHelper {
 struct ContentView: View {
     
     @State private var showSettingsPanel = false
+    @State private var showChangelogPanel = false
     @State private var showAppMenu = false
+    @State private var isVersionHovered = false
     @AppStorage("allowedWiFiNetworks") private var storedAllowedWiFiNetworks = "[]"
     @AppStorage("lastMountedShares") private var storedLastMountedShares = "[]"
     
@@ -91,21 +93,42 @@ struct ContentView: View {
         return URL(string: withScheme)?.host ?? ""
     }
     
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+        return "v\(version)"
+    }
+    
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack {
             mainContent
-            appMenuButton
+
+            VStack {
+                Spacer()
+
+                HStack {
+                    versionLabel
+                    Spacer()
+                    appMenuButton
+                }
+            }
         }
+        
         .fixedSize(horizontal: false, vertical: true)
         .overlay(alignment: .center) {
             if showSettingsPanel {
                 settingsOverlay
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showChangelogPanel {
+                changelogOverlay
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: showSharePicker)
         .animation(.easeInOut(duration: 0.2), value: status)
         .animation(.easeInOut(duration: 0.25), value: showSettingsPanel)
+        .animation(.easeInOut(duration: 0.25), value: showChangelogPanel)
         .onAppear {
             DispatchQueue.main.async {
                 focusedField = nil
@@ -143,6 +166,7 @@ struct ContentView: View {
             rememberPasswordView
             connectButton
             statusView
+
         }
         .padding(.top, 24)
         .padding(.horizontal, 24)
@@ -493,6 +517,32 @@ struct ContentView: View {
         }
     }
     
+    // MARK: Version label
+
+    private var versionLabel: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showChangelogPanel = true
+            }
+        } label: {
+            Text(appVersion)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(isVersionHovered ? .primary : .secondary)
+                .opacity(isVersionHovered ? 1.0 : 0.65)
+                .underline(isVersionHovered)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isVersionHovered = hovering
+            }
+        }
+        .help("Open changelog")
+        .padding(.leading, 20)
+        .padding(.bottom, 20)
+    }
+    
     // MARK: App menu button
     // Brand change: popover items use Brand.primary tint on hover
     
@@ -555,6 +605,14 @@ struct ContentView: View {
             .padding(.vertical, 4)
             .frame(width: 180)
         }
+    }
+    
+    // MARK: Changelog overlay
+
+    private var changelogOverlay: some View {
+        ChangelogPanelView(show: $showChangelogPanel)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.move(edge: .trailing))
     }
     
     // MARK: Settings overlay

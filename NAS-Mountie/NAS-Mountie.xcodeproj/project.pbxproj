@@ -12,6 +12,8 @@
 		CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */; };
 		CA1C3E722F9F351200A98A89 /* NetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */; };
 		CA24D2D82FA14171002A879B /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA24D2D72FA14171002A879B /* Network.framework */; };
+		CA2EFCFF2FA19A380069EC2C /* ChangelogPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */; };
+		CA2EFD012FA19C5A0069EC2C /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CA2EFD002FA19C590069EC2C /* CHANGELOG.md */; };
 		CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */; };
 		CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B2B1C2FA012A100273FBB /* Brandkit.swift */; };
 		CA74DC1E2FA1453100CF08E5 /* StartupMountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */; };
@@ -49,6 +51,8 @@
 		CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanelView.swift; sourceTree = "<group>"; };
 		CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHelper.swift; sourceTree = "<group>"; };
 		CA24D2D72FA14171002A879B /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangelogPanelView.swift; sourceTree = "<group>"; };
+		CA2EFD002FA19C590069EC2C /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../../CHANGELOG.md; sourceTree = "<group>"; };
 		CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProfileManager.swift; sourceTree = "<group>"; };
 		CA5B2B1C2FA012A100273FBB /* Brandkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brandkit.swift; sourceTree = "<group>"; };
 		CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupMountManager.swift; sourceTree = "<group>"; };
@@ -129,6 +133,8 @@
 			children = (
 				CAD250332F92C56F00D85C6F /* Assets.xcassets */,
 				CA5B2B1C2FA012A100273FBB /* Brandkit.swift */,
+				CA2EFD002FA19C590069EC2C /* CHANGELOG.md */,
+				CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */,
 				CAD250312F92C56B00D85C6F /* ContentView.swift */,
 				CA0F01492F93099F0020A2BC /* Info.plist */,
 				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
@@ -272,6 +278,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CAD250382F92C56F00D85C6F /* Preview Assets.xcassets in Resources */,
+				CA2EFD012FA19C5A0069EC2C /* CHANGELOG.md in Resources */,
 				CAD250342F92C56F00D85C6F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -305,6 +312,7 @@
 				CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */,
 				CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */,
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
+				CA2EFCFF2FA19A380069EC2C /* ChangelogPanelView.swift in Sources */,
 				CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
 			);
@@ -489,7 +497,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mountie";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -528,7 +536,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mountie";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
