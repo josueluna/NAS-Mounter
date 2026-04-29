@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>NAS Mountie — Mount your NAS. Right from the menu bar.</title>
+  <meta
+    name="description"
+    content="NAS Mountie is a lightweight macOS menu bar app for mounting SMB/NAS shares quickly, safely, and with as little friction as possible."
+  />
+  <meta
+    name="keywords"
+    content="NAS Mountie, macOS, SMB, NAS, menu bar app, SwiftUI, Keychain, Wi-Fi profiles, mount shares"
+  />
+  <meta name="theme-color" content="#1D2023" />
+
+  <meta property="og:title" content="NAS Mountie" />
+  <meta
+    property="og:description"
+    content="Mount your NAS. Right from the menu bar."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="imgs/app-icon.png" />
+
+  <style>
+    :root {
+      --bg: #111417;
+      --bg-soft: #171b1f;
+      --panel: rgba(22, 26, 30, 0.78);
+      --panel-solid: #181d21;
+      --card: rgba(255, 255, 255, 0.045);
+      --card-strong: rgba(255, 255, 255, 0.075);
+      --border: rgba(255, 255, 255, 0.10);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #F5F2EB;
+      --muted: #B8B6AF;
+      --muted-2: #8F959B;
+      --charcoal: #1D2023;
+      --offwhite: #F5F2EB;
+      --slate: #5B6E85;
+      --green: #2E6A4F;
+      --green-2: #3B7B5C;
+      --sand: #E6D8B6;
+      --sand-2: #C79D63;
+      --shadow: 0 18px 60px rgba(0,0,0,0.38);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --max: 1200px;
+      --nav-height: 78px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(91,110,133,0.22), transparent 28%),
+        radial-gradient(circle at 85% 22%, rgba(46,106,79,0.18), transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(230,216,182,0.08), transparent 35%),
+        linear-gradient(180deg, #0d1012 0%, #14181b 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 100%);
+      opacity: 0.14;
+      z-index: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: min(calc(100% - 40px), var(--max));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(
+        to bottom,
+        rgba(12, 14, 16, 0.82),
+        rgba(12, 14, 16, 0.55)
+      );
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .nav {
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.04);
+      padding: 4px;
+    }
+
+    .brand-name {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      line-height: 1;
+    }
+
+    .brand-name strong {
+      font-size: 0.98rem;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      color: var(--offwhite);
+    }
+
+    .brand-name span {
+      font-size: 0.76rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--offwhite);
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-beta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--sand);
+      background: rgba(199,157,99,0.12);
+      border: 1px solid rgba(199,157,99,0.25);
+      padding: 9px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge-beta::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--sand-2);
+      box-shadow: 0 0 0 6px rgba(199,157,99,0.12);
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 650;
+      font-size: 0.95rem;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: var(--offwhite);
+      background: linear-gradient(180deg, #3B7B5C 0%, #2E6A4F 100%);
+      box-shadow: 0 12px 28px rgba(46,106,79,0.28);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #458868 0%, #327356 100%);
+    }
+
+    .btn-secondary {
+      color: var(--offwhite);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: var(--border-strong);
+    }
+
+    .hero {
+      padding: 56px 0 42px;
+    }
+
+    .hero-shell {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--green), transparent);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(2.7rem, 5vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+      max-width: 10ch;
+    }
+
+    .headline-accent {
+      color: #8BA87B;
+    }
+
+    .hero p.lead {
+      margin: 0 0 26px;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 1.04rem;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .hero-proof {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 0.88rem;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+
+    .visual-wrap {
+      position: relative;
+      border-radius: 34px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(91,110,133,0.26), transparent 30%),
+        radial-gradient(circle at 80% 18%, rgba(230,216,182,0.14), transparent 25%),
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 620px;
+    }
+
+    .mountain-glow {
+      position: absolute;
+      inset: auto -8% -8% -8%;
+      height: 62%;
+      background:
+        radial-gradient(circle at center, rgba(230,216,182,0.18), transparent 48%),
+        linear-gradient(180deg, transparent, rgba(0,0,0,0.38));
+      pointer-events: none;
+    }
+
+    .mock-bar {
+      position: absolute;
+      top: 18px;
+      left: 22px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(245,242,235,0.78);
+      font-size: 0.86rem;
+      opacity: 0.86;
+    }
+
+    .mock-bar .left,
+    .mock-bar .right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mock-menu-icon {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+    }
+
+    .mock-window {
+      position: relative;
+      width: min(100%, 430px);
+      margin: 72px auto 0;
+      padding: 28px 26px 22px;
+      border-radius: 26px;
+      background: rgba(245,242,235,0.97);
+      color: var(--charcoal);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.34);
+      z-index: 1;
+    }
+
+    .mock-window::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 14px solid rgba(245,242,235,0.97);
+    }
+
+    .mock-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .mock-header img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .mock-header strong {
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .field-row label {
+      font-size: 0.95rem;
+      color: #4E5358;
+    }
+
+    .field {
+      background: #FBFAF6;
+      border: 1px solid rgba(29,32,35,0.14);
+      min-height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-size: 0.96rem;
+      color: #1f2428;
+    }
+
+    .field-icon {
+      width: 44px;
+      min-height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(29,32,35,0.14);
+      background: #FBFAF6;
+      color: #4E5358;
+      font-size: 1rem;
+    }
+
+    .mock-checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #43484D;
+      margin: 8px 0 16px;
+      font-size: 0.95rem;
+    }
+
+    .mock-checkbox-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 6px 14px rgba(46,106,79,0.18);
+    }
+
+    .mock-button {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: 1rem;
+      background: linear-gradient(180deg, #3B7B5C 0%, #2E6A4F 100%);
+      color: var(--offwhite);
+      margin-bottom: 16px;
+      box-shadow: 0 12px 24px rgba(46,106,79,0.20);
+    }
+
+    .mock-status {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: #394046;
+    }
+
+    .status-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(59,123,92,0.16);
+      display: grid;
+      place-items: center;
+      color: var(--green);
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .status-copy small {
+      display: block;
+      color: #70767C;
+      margin-top: 3px;
+      line-height: 1.45;
+    }
+
+    .floating-card {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(20, 24, 28, 0.68);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      color: var(--text);
+      z-index: 2;
+    }
+
+    .floating-card .icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.06);
+      color: var(--sand);
+      font-size: 1rem;
+      flex: 0 0 auto;
+    }
+
+    .floating-card strong {
+      display: block;
+      font-size: 0.94rem;
+      margin-bottom: 3px;
+    }
+
+    .floating-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.83rem;
+      line-height: 1.45;
+    }
+
+    .card-left {
+      left: 10px;
+      bottom: 86px;
+      max-width: 220px;
+    }
+
+    .card-right {
+      right: 12px;
+      top: 128px;
+      max-width: 220px;
+    }
+
+    .section {
+      padding: 42px 0;
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+      max-width: 740px;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--sand);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      margin-bottom: 10px;
+    }
+
+    .section-label::before {
+      content: "";
+      width: 26px;
+      height: 1px;
+      background: rgba(230,216,182,0.55);
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+    }
+
+    .section p.section-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature-card,
+    .detail-card,
+    .code-card,
+    .status-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.035));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+    }
+
+    .feature-card .icon,
+    .detail-card .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--sand);
+      margin-bottom: 14px;
+      font-size: 1.05rem;
+    }
+
+    .feature-card h3,
+    .detail-card h3,
+    .status-card h3,
+    .code-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+      letter-spacing: -0.03em;
+    }
+
+    .feature-card p,
+    .detail-card p,
+    .status-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 0.95rem;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .step-card {
+      position: relative;
+      padding: 22px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 220px;
+    }
+
+    .step-number {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: rgba(46,106,79,0.18);
+      color: #CBE1D4;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      border: 1px solid rgba(46,106,79,0.30);
+    }
+
+    .step-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      letter-spacing: -0.03em;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 0.95rem;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    ul.clean-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    ul.clean-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    ul.clean-list li::before {
+      content: "•";
+      color: var(--green);
+      font-size: 1.3rem;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+    }
+
+    .code-card pre {
+      margin: 14px 0 0;
+      padding: 16px;
+      overflow-x: auto;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #DDE3E8;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .status-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .status-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .mini-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .mini-chip b {
+      color: var(--offwhite);
+      font-weight: 650;
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .roadmap-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .cta-section {
+      padding: 42px 0 74px;
+    }
+
+    .cta-panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      padding: 34px;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(91,110,133,0.22), transparent 26%),
+        radial-gradient(circle at 85% 20%, rgba(46,106,79,0.24), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: var(--shadow);
+    }
+
+    .cta-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .cta-copy {
+      max-width: 700px;
+    }
+
+    .cta-copy h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.9rem, 3vw, 3.2rem);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
+    }
+
+    .cta-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .cta-icon {
+      width: 94px;
+      height: 94px;
+      border-radius: 24px;
+      object-fit: cover;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.28);
+      background: rgba(255,255,255,0.04);
+      padding: 6px;
+    }
+
+    .footer {
+      padding: 0 0 42px;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted-2);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a:hover {
+      color: var(--offwhite);
+    }
+
+    @media (max-width: 1120px) {
+      .hero-shell,
+      .info-grid,
+      .split,
+      .cta-content {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cta-content {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .nav-links,
+      .badge-beta {
+        display: none;
+      }
+
+      .grid-3,
+      .steps,
+      .split,
+      .roadmap {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 34px;
+      }
+
+      .visual-wrap {
+        min-height: 560px;
+      }
+
+      .card-left,
+      .card-right {
+        position: static;
+        margin-top: 14px;
+        max-width: none;
+      }
+
+      .mock-window {
+        margin-top: 54px;
+      }
+
+      .cta-panel,
+      .feature-card,
+      .detail-card,
+      .code-card,
+      .status-card,
+      .step-card {
+        border-radius: 22px;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .field-row label {
+        margin-bottom: -2px;
+      }
+
+      .field-icon {
+        display: none;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        width: min(calc(100% - 24px), var(--max));
+      }
+
+      .nav {
+        gap: 12px;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .cta-actions {
+        flex-direction: column;
+      }
+
+      .mock-window {
+        padding: 22px 18px 18px;
+      }
+
+      .visual-wrap {
+        min-height: 520px;
+        padding: 18px;
+      }
+
+      .brand-name span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#top" class="brand" aria-label="NAS Mountie home">
+        <img class="brand-mark" src="imgs/logo-mark.png" alt="NAS Mountie logo mark" />
+        <div class="brand-name">
+          <strong>NAS Mountie</strong>
+          <span>Lightweight macOS menu bar utility</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#profiles">Profiles</a>
+        <a href="#security">Security</a>
+        <a href="#install">Install</a>
+      </nav>
+
+      <div class="nav-cta">
+        <div class="badge-beta">Currently in beta</div>
+        <a class="btn btn-secondary" href="https://github.com/josueluna/NAS-Mountie" target="_blank" rel="noreferrer">
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-shell">
+        <div class="hero-copy">
+          <div class="eyebrow">macOS menu bar app for SMB / NAS shares</div>
+
+          <h1>
+            Mount your NAS.
+            <span class="headline-accent">Right from the menu bar.</span>
+          </h1>
+
+          <p class="lead">
+            <strong>NAS Mountie</strong> is a lightweight macOS app for mounting SMB/NAS shares
+            quickly, safely, and with as little friction as possible. It remembers connection
+            profiles by Wi-Fi network, stores credentials securely in the macOS Keychain, and can
+            automatically mount saved shares when your Mac reconnects to a known network.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/josueluna/NAS-Mountie" target="_blank" rel="noreferrer">
+              View source on GitHub
+            </a>
+            <a class="btn btn-secondary" href="#install">
+              Build from source
+            </a>
+          </div>
+
+          <div class="hero-proof">
+            <div class="pill"><span class="pill-dot"></span>macOS utility</div>
+            <div class="pill"><span class="pill-dot"></span>Keychain-backed credentials</div>
+            <div class="pill"><span class="pill-dot"></span>Wi-Fi aware profiles</div>
+            <div class="pill"><span class="pill-dot"></span>Beta / local testing</div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="visual-wrap">
+            <div class="mock-bar" aria-hidden="true">
+              <div class="left">
+                <img class="mock-menu-icon" src="imgs/menubar-icon.png" alt="" />
+              </div>
+              <div class="right">
+                <span>⌁</span>
+                <span>⌂</span>
+                <span>◐</span>
+              </div>
+            </div>
+
+            <div class="mock-window" aria-label="NAS Mountie app preview">
+              <div class="mock-header">
+                <img src="imgs/logo-mark.png" alt="NAS Mountie logo" />
+                <strong>NAS Mountie</strong>
+              </div>
+
+              <div class="field-row">
+                <label>SMB</label>
+                <div class="field">192.168.68.110</div>
+                <div class="field-icon">☷</div>
+              </div>
+
+              <div class="field-row">
+                <label>User</label>
+                <div class="field">josue</div>
+              </div>
+
+              <div class="field-row">
+                <label>Password</label>
+                <div class="field">••••••••••••</div>
+              </div>
+
+              <div class="mock-checkbox">
+                <span class="mock-checkbox-box">✓</span>
+                <span>Remember Password</span>
+              </div>
+
+              <div class="mock-button">Mount</div>
+
+              <div class="mock-status">
+                <div class="status-badge">✓</div>
+                <div class="status-copy">
+                  Drive mounted successfully
+                  <small>This window will close shortly…</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="floating-card card-left">
+              <div class="icon-box">🔒</div>
+              <div>
+                <strong>Keychain-secured</strong>
+                <span>Passwords are handled through macOS Keychain, not stored as plain text.</span>
+              </div>
+            </div>
+
+            <div class="floating-card card-right">
+              <div class="icon-box">◉</div>
+              <div>
+                <strong>Network-aware profiles</strong>
+                <span>Save different NAS settings per Wi-Fi network and avoid mounting the wrong shares.</span>
+              </div>
+            </div>
+
+            <div class="mountain-glow" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Core features</div>
+          <h2>Small, focused, and built for less friction.</h2>
+          <p class="section-copy">
+            NAS Mountie is intentionally narrow in scope: fast SMB mounting, network-aware memory,
+            secure credential handling, and a compact macOS-native experience that stays out of the way.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <article class="feature-card">
+            <div class="icon">⟲</div>
+            <h3>Quick SMB mounting</h3>
+            <p>
+              Mount SMB shares from a NAS using an IP address or hostname, then select one or more
+              shares to mount without extra clutter.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">⌘</div>
+            <h3>Menu bar first</h3>
+            <p>
+              A compact menu bar popover keeps the workflow fast and focused, without turning NAS access
+              into a full-size utility app.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">🔐</div>
+            <h3>macOS Keychain</h3>
+            <p>
+              Credentials are stored securely using the macOS Keychain. Passwords are not kept as plain
+              text in source code or app files.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">◌</div>
+            <h3>Per Wi-Fi profiles</h3>
+            <p>
+              NAS Mountie remembers connection profiles by Wi-Fi network so your home NAS profile
+              stays separate from other environments.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">↗</div>
+            <h3>Auto-mount on known networks</h3>
+            <p>
+              When your Mac reconnects to a familiar Wi-Fi network, saved shares can mount
+              automatically with much less repetitive setup.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">⚙</div>
+            <h3>Useful macOS settings</h3>
+            <p>
+              Includes support for Launch at Login, optional Dock icon visibility, and a lightweight
+              UI tailored to everyday local use.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">How it works</div>
+          <h2>From menu bar click to mounted share in a few steps.</h2>
+          <p class="section-copy">
+            The workflow is intentionally direct: enter your NAS details, browse shares, pick what you
+            need, and mount. If you want, NAS Mountie remembers the setup for the current Wi-Fi network.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step-card">
+            <div class="step-number">1</div>
+            <h3>Open from the menu bar</h3>
+            <p>
+              Launch NAS Mountie from the macOS menu bar instead of jumping into a large utility window.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-number">2</div>
+            <h3>Enter NAS credentials</h3>
+            <p>
+              Type the NAS address, username, and password. You can optionally enable
+              <strong>Remember Password</strong>.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-number">3</div>
+            <h3>Browse and select shares</h3>
+            <p>
+              View available SMB shares from the connected NAS and choose one or multiple shares to mount.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-number">4</div>
+            <h3>Mount and move on</h3>
+            <p>
+              Click <strong>Mount</strong>. NAS Mountie can save the connection profile for the current
+              Wi-Fi network and mount again automatically next time.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="profiles">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Network profiles</div>
+          <h2>One app, different networks, less accidental crossover.</h2>
+          <p class="section-copy">
+            NAS Mountie remembers connection profiles by Wi-Fi network. That means it can behave
+            intelligently at home, while staying empty or separate on another network.
+          </p>
+        </div>
+
+        <div class="split">
+          <article class="detail-card">
+            <div class="icon">⌂</div>
+            <h3>What a profile can remember</h3>
+            <ul class="clean-list">
+              <li>Wi-Fi network name</li>
+              <li>NAS host or IP address</li>
+              <li>Username</li>
+              <li>Previously mounted shares</li>
+            </ul>
+          </article>
+
+          <article class="detail-card">
+            <div class="icon">◎</div>
+            <h3>Why it matters</h3>
+            <ul class="clean-list">
+              <li>At home, it can remember your home NAS and selected shares.</li>
+              <li>On another network, it starts clean unless you save a separate profile there.</li>
+              <li>This helps avoid showing or mounting the wrong shares in the wrong place.</li>
+              <li>Passwords are handled separately through the macOS Keychain.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="security">
+      <div class="container info-grid">
+        <div>
+          <div class="section-header">
+            <div class="section-label">Security & requirements</div>
+            <h2>Secure where it counts. Practical where it matters.</h2>
+            <p class="section-copy">
+              NAS Mountie uses the macOS Keychain for secure credential storage and is designed for modern
+              macOS workflows, including features like Launch at Login.
+            </p>
+          </div>
+
+          <div class="split">
+            <article class="detail-card">
+              <div class="icon">🔒</div>
+              <h3>Security</h3>
+              <p>
+                Credentials are stored in the macOS Keychain. Passwords are not stored as plain text in
+                app files or source code.
+              </p>
+            </article>
+
+            <article class="detail-card">
+              <div class="icon"></div>
+              <h3>Requirements</h3>
+              <ul class="clean-list" style="margin-top: 0;">
+                <li>macOS 13 or later recommended</li>
+                <li>SMB sharing enabled on your NAS</li>
+                <li>Network access to the NAS</li>
+                <li>Xcode for building from source</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        <div id="install">
+          <article class="code-card">
+            <h3>Installation from source</h3>
+            <p style="margin:0;color:var(--muted);line-height:1.75;font-size:0.95rem;">
+              NAS Mountie is currently in beta. There is no App Store build or GitHub release yet,
+              so the current path is to build it locally from source.
+            </p>
+
+            <pre><code>git clone https://github.com/josueluna/NAS-Mountie.git
+open NAS-Mountie/NAS-Mountie.xcodeproj</code></pre>
+
+            <pre><code>Build and run:
+Cmd + R</code></pre>
+
+            <pre><code>Create a local usable .app:
+1. Set scheme to Release
+2. Build the project
+3. Product &gt; Show Build Folder in Finder
+4. Open Products/Release
+5. Copy NAS-Mountie.app to /Applications</code></pre>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="status">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Current status</div>
+          <h2>Beta now. Refinement next.</h2>
+          <p class="section-copy">
+            NAS Mountie is stable enough for daily local testing, but features and UI details may
+            continue to evolve. The current roadmap focuses on polish, release readiness, and better
+            management workflows.
+          </p>
+        </div>
+
+        <article class="status-card">
+          <div class="status-stack">
+            <div class="mini-chip"><b>Status:</b> Beta</div>
+            <div class="mini-chip"><b>Platform:</b> macOS</div>
+            <div class="mini-chip"><b>Built with:</b> SwiftUI</div>
+            <div class="mini-chip"><b>License:</b> MIT</div>
+          </div>
+
+          <div class="roadmap">
+            <div class="roadmap-item">App icon and custom menu bar icon polish</div>
+            <div class="roadmap-item">Cleaner release packaging</div>
+            <div class="roadmap-item">GitHub Releases</div>
+            <div class="roadmap-item">Improved settings management</div>
+            <div class="roadmap-item">Better network profile management UI</div>
+            <div class="roadmap-item">Optional unmount / disconnect actions</div>
+            <div class="roadmap-item">Additional SMB validation and error handling</div>
+            <div class="roadmap-item">More detailed mount status feedback</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-panel">
+          <div class="cta-content">
+            <div class="cta-copy">
+              <div class="section-label" style="margin-bottom:12px;">Built by Josué Luna</div>
+              <h2>
+                Mount your shares.
+                <span class="headline-accent">Move on with your day.</span>
+              </h2>
+              <p>
+                NAS Mountie is a focused utility for people who want their NAS workflow to feel more native,
+                more intentional, and less annoying on macOS. Explore the repo, test the beta, and follow
+                the project as it evolves.
+              </p>
+
+              <div class="cta-actions">
+                <a class="btn btn-primary" href="https://github.com/josueluna/NAS-Mountie" target="_blank" rel="noreferrer">
+                  View GitHub repository
+                </a>
+                <a class="btn btn-secondary" href="https://www.linkedin.com/in/josuelunagamboa/" target="_blank" rel="noreferrer">
+                  About the author
+                </a>
+              </div>
+            </div>
+
+            <img class="cta-icon" src="imgs/app-icon.png" alt="NAS Mountie app icon" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>© NAS Mountie — MIT License</div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/josueluna/NAS-Mountie" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://www.linkedin.com/in/josuelunagamboa/" target="_blank" rel="noreferrer">Josué Luna</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
