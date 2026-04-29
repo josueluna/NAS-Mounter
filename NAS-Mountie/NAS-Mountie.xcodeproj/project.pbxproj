@@ -16,7 +16,6 @@
 		CA2EFD012FA19C5A0069EC2C /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CA2EFD002FA19C590069EC2C /* CHANGELOG.md */; };
 		CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */; };
 		CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B2B1C2FA012A100273FBB /* Brandkit.swift */; };
-		CA74DC1E2FA1453100CF08E5 /* StartupMountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */; };
 		CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */; };
 		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
 		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
@@ -55,7 +54,6 @@
 		CA2EFD002FA19C590069EC2C /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../../CHANGELOG.md; sourceTree = "<group>"; };
 		CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProfileManager.swift; sourceTree = "<group>"; };
 		CA5B2B1C2FA012A100273FBB /* Brandkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brandkit.swift; sourceTree = "<group>"; };
-		CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupMountManager.swift; sourceTree = "<group>"; };
 		CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		CAD2502C2F92C56B00D85C6F /* NAS-Mountie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mountie.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
@@ -108,7 +106,6 @@
 			isa = PBXGroup;
 			children = (
 				CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */,
-				CA74DC1D2FA1453100CF08E5 /* StartupMountManager.swift */,
 				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
 				CAD2502E2F92C56B00D85C6F /* NAS-Mountie */,
 				CAD250402F92C57000D85C6F /* NAS-MountieTests */,
@@ -137,13 +134,13 @@
 				CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */,
 				CAD250312F92C56B00D85C6F /* ContentView.swift */,
 				CA0F01492F93099F0020A2BC /* Info.plist */,
-				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
 				CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */,
-				CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */,
-				CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */,
+				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
 				CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */,
 				CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */,
 				CAD250362F92C56F00D85C6F /* Preview Content */,
+				CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */,
+				CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */,
 			);
 			path = "NAS-Mountie";
 			sourceTree = "<group>";
@@ -307,7 +304,6 @@
 				CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */,
 				CA1C3E722F9F351200A98A89 /* NetworkHelper.swift in Sources */,
 				CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */,
-				CA74DC1E2FA1453100CF08E5 /* StartupMountManager.swift in Sources */,
 				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
 				CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */,
 				CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */,

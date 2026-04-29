@@ -1,91 +1,187 @@
 import Foundation
-import AppKit
 import Network
 
 final class StartupMountManager {
     private let defaults: UserDefaults
+
     private var networkMonitor: NWPathMonitor?
+    private var retryTimer: DispatchSourceTimer?
+
     private var hasMountedThisSession = false
-    
+    private var isAttemptInProgress = false
+    private var currentPathStatus: NWPath.Status = .requiresConnection
+    private var retryCount = 0
+
+    private let monitorQueue = DispatchQueue(label: "com.nasmountie.startup.network-monitor")
+    private let retryQueue = DispatchQueue(label: "com.nasmountie.startup.retry", qos: .utility)
+
+    private let maxRetryCount = 24
+    private let retryInterval: TimeInterval = 0.75
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
-    
+
     func scheduleStartupMountIfNeeded() {
-        guard shouldAttemptStartupMount else { return }
-        waitForNetworkThenMount()
+        guard shouldAttemptStartupMount else {
+            return
+        }
+
+        startNetworkMonitor()
+        startRetryTimer()
     }
-    
+
     func resetSessionState() {
         defaults.removeObject(forKey: "_sessionMountDone")
-        networkMonitor?.cancel()
-        networkMonitor = nil
+        stop()
     }
-    
+
     // MARK: - Private
-    
+
     private var shouldAttemptStartupMount: Bool {
         let runOnStartup = defaults.bool(forKey: "runOnStartup")
         let alreadyMountedThisSession = defaults.bool(forKey: "_sessionMountDone")
         return runOnStartup && !alreadyMountedThisSession
     }
-    
-    /// Observes network reachability and fires mountLastSharesSilentlyIfAllowed()
-    /// as soon as a usable path is available. Cancels the monitor after first attempt.
-    private func waitForNetworkThenMount() {
+
+    private func startNetworkMonitor() {
         let monitor = NWPathMonitor()
         networkMonitor = monitor
-        
+
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self else { return }
-            
-            // Wait until the network is actually up
-            guard path.status == .satisfied else { return }
-            
-            // Only mount once per session
-            guard !self.hasMountedThisSession else { return }
-            self.hasMountedThisSession = true
-            self.defaults.set(true, forKey: "_sessionMountDone")
-            
-            // Cancel monitor — we only need the first successful connection
-            monitor.cancel()
-            self.networkMonitor = nil
-            
-            // Give the system a moment to stabilize SMB routing after network comes up
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                self.mountLastSharesSilentlyIfAllowed()
+
+            self.currentPathStatus = path.status
+
+            if path.status == .satisfied {
+                self.startRetryTimer()
             }
         }
-        
-        // Use a background queue so it doesn't block the main thread
-        monitor.start(queue: DispatchQueue(label: "com.nasmountie.networkmonitor"))
-    }
-    
-    private func mountLastSharesSilentlyIfAllowed() {
-        guard let currentSSID = NetworkHelper.currentSSID() else { return }
 
-        guard let profile = NetworkProfileManager.profile(for: currentSSID) else {
+        monitor.start(queue: monitorQueue)
+    }
+
+    private func startRetryTimer() {
+        retryQueue.async { [weak self] in
+            guard let self else { return }
+
+            guard self.retryTimer == nil else {
+                return
+            }
+
+            let timer = DispatchSource.makeTimerSource(queue: self.retryQueue)
+            timer.schedule(
+                deadline: .now(),
+                repeating: self.retryInterval
+            )
+
+            timer.setEventHandler { [weak self] in
+                self?.attemptStartupMount()
+            }
+
+            self.retryTimer = timer
+            timer.resume()
+        }
+    }
+
+    private func attemptStartupMount() {
+        guard shouldAttemptStartupMount else {
+            stop()
             return
         }
 
-        guard let credentials = KeychainHelper.load() else { return }
+        guard !hasMountedThisSession else {
+            stop()
+            return
+        }
 
-        guard let host = parsedHost(from: profile.host) else { return }
+        guard !isAttemptInProgress else {
+            return
+        }
 
-        let shares = profile.shares
-        guard !shares.isEmpty else { return }
+        retryCount += 1
 
+        if retryCount > maxRetryCount {
+            stop()
+            return
+        }
+
+        guard currentPathStatus == .satisfied else {
+            return
+        }
+
+        isAttemptInProgress = true
+
+        defer {
+            isAttemptInProgress = false
+        }
+
+        guard let currentSSID = NetworkHelper.currentSSID() else {
+            return
+        }
+
+        guard let profile = NetworkProfileManager.profile(for: currentSSID) else {
+            stop()
+            return
+        }
+
+        guard let credentials = KeychainHelper.load() else {
+            stop()
+            return
+        }
+
+        guard let host = parsedHost(from: profile.host) else {
+            stop()
+            return
+        }
+
+        guard !profile.shares.isEmpty else {
+            stop()
+            return
+        }
+
+        guard isSMBPortReachable(host: host) else {
+            return
+        }
+
+        hasMountedThisSession = true
+        defaults.set(true, forKey: "_sessionMountDone")
+        stop()
+
+        mount(
+            host: host,
+            username: profile.username,
+            password: credentials.password,
+            shares: profile.shares
+        )
+    }
+
+    private func stop() {
+        retryTimer?.cancel()
+        retryTimer = nil
+
+        networkMonitor?.cancel()
+        networkMonitor = nil
+    }
+
+    private func mount(
+        host: String,
+        username: String,
+        password: String,
+        shares: [String]
+    ) {
         let encodedUser =
-        profile.username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
-        ?? profile.username
+            username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
+            ?? username
 
         let encodedPass =
-        credentials.password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed)
-        ?? credentials.password
+            password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed)
+            ?? password
 
         DispatchQueue.global(qos: .background).async {
             for share in shares {
                 let fullURL = "smb://\(encodedUser):\(encodedPass)@\(host)/\(share)"
+
                 let script = """
                 tell application "Finder"
                     try
@@ -94,16 +190,34 @@ final class StartupMountManager {
                     end try
                 end tell
                 """
+
                 NSAppleScript(source: script)?.executeAndReturnError(nil)
             }
         }
     }
-    
+
+    private func isSMBPortReachable(host: String, timeout: TimeInterval = 0.75) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
+        process.arguments = ["-z", "-G", "\(timeout)", host, "445"]
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
+    }
+
     private func parsedHost(from rawHost: String) -> String? {
-        let trimmed = rawHost.trimmingCharacters(in: .whitespaces)
+        let trimmed = rawHost.trimmingCharacters(in: .whitespacesAndNewlines)
         let withScheme = trimmed.lowercased().hasPrefix("smb://") ? trimmed : "smb://\(trimmed)"
-        guard let host = URL(string: withScheme)?.host, !host.isEmpty else { return nil }
+
+        guard let host = URL(string: withScheme)?.host, !host.isEmpty else {
+            return nil
+        }
+
         return host
     }
 }
-
