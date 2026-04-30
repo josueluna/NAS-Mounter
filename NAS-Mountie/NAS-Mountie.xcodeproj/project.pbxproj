@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CA0585E12FA2A11C00A0D374 /* StartupMountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */; };
+		CA0CEBDE2FA2CF69009FD153 /* StartupLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0CEBDD2FA2CF69009FD153 /* StartupLogger.swift */; };
 		CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F01472F92F1A90020A2BC /* AppDelegate.swift */; };
 		CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */; };
 		CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */; };
@@ -17,6 +18,8 @@
 		CA2EFD012FA19C5A0069EC2C /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CA2EFD002FA19C590069EC2C /* CHANGELOG.md */; };
 		CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */; };
 		CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B2B1C2FA012A100273FBB /* Brandkit.swift */; };
+		CA88C1F02FA2CAB0008AA137 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA88C1EF2FA2CAB0008AA137 /* CoreWLAN.framework */; };
+		CAA8E5CE2FA2F6040089EB73 /* StartupNotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA8E5CD2FA2F6040089EB73 /* StartupNotificationHelper.swift */; };
 		CAB0F3072F9E94F3007C7CED /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */; };
 		CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */; };
 		CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD250312F92C56B00D85C6F /* ContentView.swift */; };
@@ -46,6 +49,7 @@
 
 /* Begin PBXFileReference section */
 		CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupMountManager.swift; sourceTree = "<group>"; };
+		CA0CEBDD2FA2CF69009FD153 /* StartupLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupLogger.swift; sourceTree = "<group>"; };
 		CA0F01472F92F1A90020A2BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA0F01492F93099F0020A2BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -56,6 +60,8 @@
 		CA2EFD002FA19C590069EC2C /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../../CHANGELOG.md; sourceTree = "<group>"; };
 		CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProfileManager.swift; sourceTree = "<group>"; };
 		CA5B2B1C2FA012A100273FBB /* Brandkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brandkit.swift; sourceTree = "<group>"; };
+		CA88C1EF2FA2CAB0008AA137 /* CoreWLAN.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreWLAN.framework; path = System/Library/Frameworks/CoreWLAN.framework; sourceTree = SDKROOT; };
+		CAA8E5CD2FA2F6040089EB73 /* StartupNotificationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupNotificationHelper.swift; sourceTree = "<group>"; };
 		CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		CAD2502C2F92C56B00D85C6F /* NAS-Mountie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NAS-Mountie.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAS_MounterApp.swift; sourceTree = "<group>"; };
@@ -75,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA88C1F02FA2CAB0008AA137 /* CoreWLAN.framework in Frameworks */,
 				CA24D2D82FA14171002A879B /* Network.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,6 +106,7 @@
 		CA24D2D62FA14171002A879B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CA88C1EF2FA2CAB0008AA137 /* CoreWLAN.framework */,
 				CA24D2D72FA14171002A879B /* Network.framework */,
 			);
 			name = Frameworks;
@@ -136,14 +144,16 @@
 				CA2EFCFE2FA19A380069EC2C /* ChangelogPanelView.swift */,
 				CAD250312F92C56B00D85C6F /* ContentView.swift */,
 				CA0F01492F93099F0020A2BC /* Info.plist */,
-				CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */,
 				CAD250352F92C56F00D85C6F /* NAS_Mounter.entitlements */,
 				CAD2502F2F92C56B00D85C6F /* NAS_MounterApp.swift */,
 				CA1C3E712F9F351200A98A89 /* NetworkHelper.swift */,
 				CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */,
 				CAD250362F92C56F00D85C6F /* Preview Content */,
 				CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */,
+				CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */,
 				CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */,
+				CA0CEBDD2FA2CF69009FD153 /* StartupLogger.swift */,
+				CAA8E5CD2FA2F6040089EB73 /* StartupNotificationHelper.swift */,
 			);
 			path = "NAS-Mountie";
 			sourceTree = "<group>";
@@ -306,6 +316,7 @@
 			files = (
 				CA5B2B1D2FA012A200273FBB /* Brandkit.swift in Sources */,
 				CA1C3E722F9F351200A98A89 /* NetworkHelper.swift in Sources */,
+				CAA8E5CE2FA2F6040089EB73 /* StartupNotificationHelper.swift in Sources */,
 				CA1C3E6E2F9F233D00A98A89 /* SettingsView.swift in Sources */,
 				CA0F01482F92F1A90020A2BC /* AppDelegate.swift in Sources */,
 				CA1C3E702F9F297100A98A89 /* SettingsPanelView.swift in Sources */,
@@ -313,6 +324,7 @@
 				CAD250322F92C56B00D85C6F /* ContentView.swift in Sources */,
 				CA0585E12FA2A11C00A0D374 /* StartupMountManager.swift in Sources */,
 				CA2EFCFF2FA19A380069EC2C /* ChangelogPanelView.swift in Sources */,
+				CA0CEBDE2FA2CF69009FD153 /* StartupLogger.swift in Sources */,
 				CA5366692FA1543C00159BDB /* NetworkProfileManager.swift in Sources */,
 				CAD250302F92C56B00D85C6F /* NAS_MounterApp.swift in Sources */,
 			);

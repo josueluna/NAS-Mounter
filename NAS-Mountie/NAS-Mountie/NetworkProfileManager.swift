@@ -10,6 +10,7 @@ struct NetworkProfile: Codable, Equatable {
 enum NetworkProfileManager {
 
     private static let storageKey = "networkProfiles"
+    private static let lastSuccessfulProfileKey = "lastSuccessfulNetworkProfileSSID"
 
     static func loadProfiles() -> [String: NetworkProfile] {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
@@ -24,6 +25,14 @@ enum NetworkProfileManager {
     static func profile(for ssid: String) -> NetworkProfile? {
         let profiles = loadProfiles()
         return profiles[ssid]
+    }
+    
+    static func lastSuccessfulProfile() -> NetworkProfile? {
+        guard let ssid = UserDefaults.standard.string(forKey: lastSuccessfulProfileKey) else {
+            return nil
+        }
+
+        return profile(for: ssid)
     }
 
     static func saveProfile(
@@ -50,6 +59,8 @@ enum NetworkProfileManager {
 
         profiles[ssid] = profile
         saveProfiles(profiles)
+
+        UserDefaults.standard.set(ssid, forKey: lastSuccessfulProfileKey)
     }
 
     static func deleteProfile(for ssid: String) {
@@ -60,6 +71,7 @@ enum NetworkProfileManager {
 
     static func deleteAllProfiles() {
         UserDefaults.standard.removeObject(forKey: storageKey)
+        UserDefaults.standard.removeObject(forKey: lastSuccessfulProfileKey)
     }
 
     private static func saveProfiles(_ profiles: [String: NetworkProfile]) {

@@ -265,12 +265,28 @@ struct SettingsPanelView: View {
     private func loadCurrentSettings() {
         currentNetwork = NetworkHelper.currentSSID()
         allowedNetworks = NetworkHelper.decodeNetworks(from: storedAllowedWiFiNetworks)
+
+        if UserDefaults.standard.object(forKey: "showDockIcon") == nil {
+            storedShowDockIcon = true
+        }
+
+        if UserDefaults.standard.object(forKey: "runOnStartup") == nil {
+            storedRunOnStartup = true
+        }
+
         draftShowDockIcon = storedShowDockIcon
-        
+
         if #available(macOS 13.0, *) {
-            draftRunOnStartup = SMAppService.mainApp.status == .enabled
-            storedRunOnStartup = draftRunOnStartup
-            if SMAppService.mainApp.status == .requiresApproval {
+            let startupStatus = SMAppService.mainApp.status
+
+            if storedRunOnStartup && startupStatus != .enabled {
+                draftRunOnStartup = true
+            } else {
+                draftRunOnStartup = startupStatus == .enabled
+                storedRunOnStartup = draftRunOnStartup
+            }
+
+            if startupStatus == .requiresApproval {
                 showStatus("Startup permission requires approval in System Settings.")
             }
         } else {

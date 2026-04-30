@@ -1,8 +1,41 @@
 import Foundation
+import CoreWLAN
 
 enum NetworkHelper {
 
+    // MARK: - SSID detection
+
     static func currentSSID() -> String? {
+        if let ssid = currentSSIDUsingCoreWLAN() {
+            return ssid
+        }
+
+        return currentSSIDUsingNetworkSetup()
+    }
+
+    static func currentSSIDFast() -> String? {
+        currentSSIDUsingCoreWLAN()
+    }
+
+    private static func currentSSIDUsingCoreWLAN() -> String? {
+        if let interface = CWWiFiClient.shared().interface(),
+           let ssid = interface.ssid(),
+           !ssid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return ssid.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        for interfaceName in CWWiFiClient.shared().interfaceNames() ?? [] {
+            if let interface = CWWiFiClient.shared().interface(withName: interfaceName),
+               let ssid = interface.ssid(),
+               !ssid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return ssid.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        return nil
+    }
+
+    private static func currentSSIDUsingNetworkSetup() -> String? {
         let devices = wifiDevices()
 
         for device in devices {
@@ -13,6 +46,8 @@ enum NetworkHelper {
 
         return nil
     }
+
+    // MARK: - Network list helpers
 
     static func encodeNetworks(_ networks: [String]) -> String {
         guard let data = try? JSONEncoder().encode(networks),
@@ -33,6 +68,8 @@ enum NetworkHelper {
 
         return networks
     }
+
+    // MARK: - networksetup fallback
 
     private static func wifiDevices() -> [String] {
         let output = runCommand(

@@ -68,6 +68,7 @@ struct ContentView: View {
     @State private var password     = ""
     @State private var showPassword = false
     @State private var remember     = false
+    @State private var isUpdatingProfileFields = false
 
     @State private var status        = ""
     @State private var isConnecting  = false
@@ -419,7 +420,11 @@ struct ContentView: View {
         .toggleStyle(MountieCheckboxStyle())
         .padding(.top, 14)
         .onChange(of: remember) { newValue in
-            if !newValue { KeychainHelper.delete() }
+            guard !isUpdatingProfileFields else { return }
+
+            if !newValue {
+                KeychainHelper.delete()
+            }
         }
     }
 
@@ -634,9 +639,23 @@ struct ContentView: View {
     }
 
     private func clearNetworkProfileFields() {
-        smbURL = ""; username = ""; password = ""; remember = false
-        selectedShares = []; availableShares = []; showSharePicker = false
-        status = ""; isSuccess = false
+        isUpdatingProfileFields = true
+
+        smbURL = ""
+        username = ""
+        password = ""
+        remember = false
+
+        selectedShares = []
+        availableShares = []
+        showSharePicker = false
+
+        status = ""
+        isSuccess = false
+
+        DispatchQueue.main.async {
+            isUpdatingProfileFields = false
+        }
     }
 
     private func loadProfileForCurrentNetwork() {
@@ -646,17 +665,36 @@ struct ContentView: View {
             isSuccess = false
             return
         }
+
         guard let profile = NetworkProfileManager.profile(for: currentSSID) else {
-            clearNetworkProfileFields(); status = ""; return
+            clearNetworkProfileFields()
+            status = ""
+            return
         }
-        smbURL = profile.host; username = profile.username
+
+        isUpdatingProfileFields = true
+
+        smbURL = profile.host
+        username = profile.username
+
         if let saved = KeychainHelper.load() {
-            password = saved.password; remember = true
+            password = saved.password
+            remember = true
         } else {
-            password = ""; remember = false
+            password = ""
+            remember = false
         }
-        selectedShares = Set(profile.shares); availableShares = []; showSharePicker = false
-        status = ""; isSuccess = false
+
+        selectedShares = Set(profile.shares)
+        availableShares = []
+        showSharePicker = false
+
+        status = ""
+        isSuccess = false
+
+        DispatchQueue.main.async {
+            isUpdatingProfileFields = false
+        }
     }
 
     private func isSMBHostReachable(_ host: String) -> Bool {
