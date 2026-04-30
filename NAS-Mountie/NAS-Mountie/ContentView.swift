@@ -6,60 +6,157 @@ import Security
 struct KeychainHelper {
     static let service = "com.nasmounter.credentials"
 
+    private static let legacyAccount = "nas-credentials"
+
+    private static func account(host: String, username: String) -> String {
+        let normalizedHost = host
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        let normalizedUsername = username
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return "\(normalizedHost)|\(normalizedUsername)"
+    }
+
+    // MARK: - Save
+
     static func save(host: String, username: String, password: String) {
-        let data: [String: String] = ["host": host, "username": username, "password": password]
-        guard let encoded = try? JSONEncoder().encode(data) else {
-            print("[Keychain] ERROR: could not encode data")
-            return
-        }
+        saveSpecific(host: host, username: username, password: password)
+
+        // Keep legacy item during migration so current app flows do not break.
+        saveLegacy(host: host, username: username, password: password)
+    }
+
+    private static func saveSpecific(host: String, username: String, password: String) {
+        let data: [String: String] = [
+            "host": host,
+            "username": username,
+            "password": password
+        ]
+
+        guard let encoded = try? JSONEncoder().encode(data) else { return }
+
+        let account = account(host: host, username: username)
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: "nas-credentials",
-            kSecUseDataProtectionKeychain as String: true
+            kSecAttrAccount as String: account
         ]
-        let updateFields: [String: Any] = [kSecValueData as String: encoded]
-        let updateStatus = SecItemUpdate(query as CFDictionary, updateFields as CFDictionary)
-        print("[Keychain] SecItemUpdate status: \(updateStatus)")
-        if updateStatus == errSecItemNotFound {
-            var newItem = query
-            newItem[kSecValueData as String] = encoded
-            let addStatus = SecItemAdd(newItem as CFDictionary, nil)
-            print("[Keychain] SecItemAdd status: \(addStatus)")
+
+        SecItemDelete(query as CFDictionary)
+
+        let newItem: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+            kSecValueData as String: encoded
+        ]
+
+        let status = SecItemAdd(newItem as CFDictionary, nil)
+        print("[Keychain] save specific status: \(status)")
+    }
+
+    private static func saveLegacy(host: String, username: String, password: String) {
+        let data: [String: String] = [
+            "host": host,
+            "username": username,
+            "password": password
+        ]
+
+        guard let encoded = try? JSONEncoder().encode(data) else { return }
+
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: legacyAccount
+        ]
+
+        SecItemDelete(query as CFDictionary)
+
+        let newItem: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: legacyAccount,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+            kSecValueData as String: encoded
+        ]
+
+        let status = SecItemAdd(newItem as CFDictionary, nil)
+        print("[Keychain] save legacy status: \(status)")
+    }
+
+    // MARK: - Load
+
+    static func load(host: String, username: String) -> (host: String, username: String, password: String)? {
+        if let specific = load(account: account(host: host, username: username)) {
+            print("[Keychain] loaded specific credentials")
+            return specific
         }
+
+        if let legacy = load() {
+            print("[Keychain] loaded legacy credentials as fallback")
+            return legacy
+        }
+
+        return nil
     }
 
     static func load() -> (host: String, username: String, password: String)? {
+        load(account: legacyAccount)
+    }
+
+    private static func load(account: String) -> (host: String, username: String, password: String)? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: "nas-credentials",
+            kSecAttrAccount as String: account,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecUseDataProtectionKeychain as String: true
+            kSecMatchLimit as String: kSecMatchLimitOne
         ]
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        print("[Keychain] SecItemCopyMatching status: \(status)")
+
+        print("[Keychain] load account \(account) status: \(status)")
+
         guard status == errSecSuccess,
               let data = result as? Data,
               let decoded = try? JSONDecoder().decode([String: String].self, from: data),
               let host = decoded["host"],
               let username = decoded["username"],
               let password = decoded["password"]
-        else { return nil }
+        else {
+            return nil
+        }
+
         return (host, username, password)
+    }
+
+    // MARK: - Delete
+
+    static func delete(host: String, username: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account(host: host, username: username)
+        ]
+
+        let status = SecItemDelete(query as CFDictionary)
+        print("[Keychain] delete specific status: \(status)")
     }
 
     static func delete() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: "nas-credentials",
-            kSecUseDataProtectionKeychain as String: true
+            kSecAttrAccount as String: legacyAccount
         ]
+
         let status = SecItemDelete(query as CFDictionary)
-        print("[Keychain] SecItemDelete status: \(status)")
+        print("[Keychain] delete legacy status: \(status)")
     }
 }
 
