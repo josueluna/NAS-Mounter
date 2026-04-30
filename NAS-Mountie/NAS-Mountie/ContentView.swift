@@ -204,6 +204,18 @@ struct ContentView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
         return "v\(version)"
     }
+    
+    private func shareRowSeparator(on background: Color) -> some View {
+        background
+            .frame(maxWidth: .infinity)
+            .frame(height: 1)
+            .overlay {
+                Rectangle()
+                    .fill(Color.primary.opacity(0.14))
+                    .frame(height: 1)
+                    .padding(.horizontal, 12)
+            }
+    }
 
     // MARK: - Body
     // FIX: VStack replaces ZStack so footer occupies a fixed 40pt row
@@ -400,23 +412,27 @@ struct ContentView: View {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(Brand.primary)
                                         .font(.system(size: 13))
+
                                     Image("TBIcon")
                                         .renderingMode(.template)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 14, height: 14)
                                         .foregroundColor(Brand.primary)
+
                                     Text(share)
                                         .font(Brand.body())
                                         .foregroundColor(.primary)
+
                                     Spacer()
                                 }
                                 .padding(.horizontal, 10)
                             }
-
-                        if share != mountedShares.last {
-                            Divider().padding(.leading, 10)
-                        }
+                            .overlay(alignment: .bottom) {
+                                if share != mountedShares.last {
+                                    shareRowSeparator(on: Brand.primaryLight)
+                                }
+                            }
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: Brand.radiusMedium))
@@ -473,40 +489,50 @@ struct ContentView: View {
                                         selectedShares.insert(share)
                                     }
                                 } label: {
-                                    (selectedShares.contains(share) ? Brand.primaryLight : Color(NSColor.controlBackgroundColor))
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 36)
-                                        .overlay(alignment: .leading) {
-                                            HStack(spacing: 8) {
-                                                Image(systemName: selectedShares.contains(share)
-                                                      ? "checkmark.circle.fill" : "circle")
-                                                    .foregroundColor(Brand.primary)
-                                                    .font(.system(size: 13))
-                                                Image("TBIcon")
-                                                    .renderingMode(.template)
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(width: 14, height: 14)
-                                                    .foregroundColor(Brand.primary)
-                                                Text(share)
-                                                    .font(Brand.body())
-                                                    .foregroundColor(.primary)
-                                                Spacer()
+                                    VStack(spacing: 0) {
+                                        (selectedShares.contains(share) ? Brand.primaryLight : Color(NSColor.controlBackgroundColor))
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 36)
+                                            .overlay(alignment: .leading) {
+                                                HStack(spacing: 8) {
+                                                    Image(systemName: selectedShares.contains(share)
+                                                          ? "checkmark.circle.fill" : "circle")
+                                                        .foregroundColor(Brand.primary)
+                                                        .font(.system(size: 13))
+
+                                                    Image("TBIcon")
+                                                        .renderingMode(.template)
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(width: 14, height: 14)
+                                                        .foregroundColor(Brand.primary)
+
+                                                    Text(share)
+                                                        .font(Brand.body())
+                                                        .foregroundColor(.primary)
+
+                                                    Spacer()
+                                                }
+                                                .padding(.horizontal, 10)
                                             }
-                                            .padding(.horizontal, 10)
+
+                                        if share != availableShares.last {
+                                            shareRowSeparator(
+                                                on: selectedShares.contains(share)
+                                                    ? Brand.primaryLight
+                                                    : Color(NSColor.controlBackgroundColor)
+                                            )
                                         }
-                                        .contentShape(Rectangle())
+                                    }
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
 
-                                if share != availableShares.last {
-                                    Divider().padding(.leading, 10)
-                                }
                             }
                         }
                         .background(Color(NSColor.controlBackgroundColor))
                     }
-                    .frame(maxHeight: CGFloat(min(availableShares.count, 4)) * 36)
+                    .frame(maxHeight: CGFloat(min(availableShares.count, 4)) * 37)
                     .background(Color(NSColor.controlBackgroundColor))
                     .clipShape(RoundedRectangle(cornerRadius: Brand.radiusMedium))
                     .overlay(
