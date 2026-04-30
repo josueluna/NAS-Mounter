@@ -271,7 +271,7 @@ struct SettingsPanelView: View {
         }
 
         if UserDefaults.standard.object(forKey: "runOnStartup") == nil {
-            storedRunOnStartup = true
+            storedRunOnStartup = false
         }
 
         draftShowDockIcon = storedShowDockIcon
