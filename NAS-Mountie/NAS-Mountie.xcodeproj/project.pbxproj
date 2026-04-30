@@ -115,13 +115,13 @@
 		CAD250232F92C56A00D85C6F = {
 			isa = PBXGroup;
 			children = (
-				CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */,
 				CA0F01472F92F1A90020A2BC /* AppDelegate.swift */,
+				CA24D2D62FA14171002A879B /* Frameworks */,
 				CAD2502E2F92C56B00D85C6F /* NAS-Mountie */,
 				CAD250402F92C57000D85C6F /* NAS-MountieTests */,
 				CAD2504A2F92C57000D85C6F /* NAS-MountieUITests */,
 				CAD2502D2F92C56B00D85C6F /* Products */,
-				CA24D2D62FA14171002A879B /* Frameworks */,
+				CAB0F3062F9E94F3007C7CED /* StatusBarController.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,9 +150,9 @@
 				CA5366682FA1543C00159BDB /* NetworkProfileManager.swift */,
 				CAD250362F92C56F00D85C6F /* Preview Content */,
 				CA1C3E6F2F9F297100A98A89 /* SettingsPanelView.swift */,
-				CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */,
 				CA1C3E6D2F9F233D00A98A89 /* SettingsView.swift */,
 				CA0CEBDD2FA2CF69009FD153 /* StartupLogger.swift */,
+				CA0585E02FA2A11C00A0D374 /* StartupMountManager.swift */,
 				CAA8E5CD2FA2F6040089EB73 /* StartupNotificationHelper.swift */,
 			);
 			path = "NAS-Mountie";
@@ -488,9 +488,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "NAS-Mountie/NAS_Mounter.entitlements";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mountie/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "NAS-Mountie/Info.plist";
@@ -512,6 +515,7 @@
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mountie";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
@@ -527,9 +531,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "NAS-Mountie/NAS_Mounter.entitlements";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NAS-Mountie/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "NAS-Mountie/Info.plist";
@@ -551,6 +558,7 @@
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "josueluna.NAS-Mountie";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;

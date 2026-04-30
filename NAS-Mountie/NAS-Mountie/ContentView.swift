@@ -8,18 +8,24 @@ struct KeychainHelper {
 
     static func save(host: String, username: String, password: String) {
         let data: [String: String] = ["host": host, "username": username, "password": password]
-        guard let encoded = try? JSONEncoder().encode(data) else { return }
+        guard let encoded = try? JSONEncoder().encode(data) else {
+            print("[Keychain] ERROR: could not encode data")
+            return
+        }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: "nas-credentials"
+            kSecAttrAccount as String: "nas-credentials",
+            kSecUseDataProtectionKeychain as String: true
         ]
         let updateFields: [String: Any] = [kSecValueData as String: encoded]
-        let status = SecItemUpdate(query as CFDictionary, updateFields as CFDictionary)
-        if status == errSecItemNotFound {
+        let updateStatus = SecItemUpdate(query as CFDictionary, updateFields as CFDictionary)
+        print("[Keychain] SecItemUpdate status: \(updateStatus)")
+        if updateStatus == errSecItemNotFound {
             var newItem = query
             newItem[kSecValueData as String] = encoded
-            SecItemAdd(newItem as CFDictionary, nil)
+            let addStatus = SecItemAdd(newItem as CFDictionary, nil)
+            print("[Keychain] SecItemAdd status: \(addStatus)")
         }
     }
 
@@ -29,10 +35,13 @@ struct KeychainHelper {
             kSecAttrService as String: service,
             kSecAttrAccount as String: "nas-credentials",
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecUseDataProtectionKeychain as String: true
         ]
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        print("[Keychain] SecItemCopyMatching status: \(status)")
+        guard status == errSecSuccess,
               let data = result as? Data,
               let decoded = try? JSONDecoder().decode([String: String].self, from: data),
               let host = decoded["host"],
@@ -46,9 +55,11 @@ struct KeychainHelper {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: "nas-credentials"
+            kSecAttrAccount as String: "nas-credentials",
+            kSecUseDataProtectionKeychain as String: true
         ]
-        SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(query as CFDictionary)
+        print("[Keychain] SecItemDelete status: \(status)")
     }
 }
 
@@ -284,37 +295,37 @@ struct ContentView: View {
 
                 VStack(spacing: 0) {
                     ForEach(mountedShares, id: \.self) { share in
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(Brand.primary)
-                                .font(.system(size: 13))
-                            Image("TBIcon")
-                                .renderingMode(.template)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 14, height: 14)
-                                .foregroundColor(Brand.primary)
-                            Text(share)
-                                .font(Brand.body())
-                                .foregroundColor(.primary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(Brand.primaryLight)
+                        Brand.primaryLight
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .overlay(alignment: .leading) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(Brand.primary)
+                                        .font(.system(size: 13))
+                                    Image("TBIcon")
+                                        .renderingMode(.template)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(Brand.primary)
+                                    Text(share)
+                                        .font(Brand.body())
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 10)
+                            }
 
                         if share != mountedShares.last {
                             Divider().padding(.leading, 10)
                         }
                     }
                 }
-                .background(
+                .clipShape(RoundedRectangle(cornerRadius: Brand.radiusMedium))
+                .overlay(
                     RoundedRectangle(cornerRadius: Brand.radiusMedium)
-                        .fill(Color(NSColor.controlBackgroundColor))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Brand.radiusMedium)
-                                .strokeBorder(Brand.primaryBorder, lineWidth: 1)
-                        )
+                        .strokeBorder(Brand.primaryBorder, lineWidth: 1)
                 )
             }
             .transition(.opacity.combined(with: .move(edge: .top)))
@@ -365,26 +376,29 @@ struct ContentView: View {
                                         selectedShares.insert(share)
                                     }
                                 } label: {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: selectedShares.contains(share)
-                                              ? "checkmark.circle.fill" : "circle")
-                                            .foregroundColor(Brand.primary)
-                                            .font(.system(size: 13))
-                                        Image("TBIcon")
-                                            .renderingMode(.template)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 14, height: 14)
-                                            .foregroundColor(Brand.primary)
-                                        Text(share)
-                                            .font(Brand.body())
-                                            .foregroundColor(.primary)
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 8)
-                                    .background(selectedShares.contains(share) ? Brand.primaryLight : Color.clear)
-                                    .contentShape(Rectangle())
+                                    (selectedShares.contains(share) ? Brand.primaryLight : Color(NSColor.controlBackgroundColor))
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 36)
+                                        .overlay(alignment: .leading) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: selectedShares.contains(share)
+                                                      ? "checkmark.circle.fill" : "circle")
+                                                    .foregroundColor(Brand.primary)
+                                                    .font(.system(size: 13))
+                                                Image("TBIcon")
+                                                    .renderingMode(.template)
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 14, height: 14)
+                                                    .foregroundColor(Brand.primary)
+                                                Text(share)
+                                                    .font(Brand.body())
+                                                    .foregroundColor(.primary)
+                                                Spacer()
+                                            }
+                                            .padding(.horizontal, 10)
+                                        }
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -393,15 +407,14 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        .background(Color(NSColor.controlBackgroundColor))
                     }
                     .frame(maxHeight: CGFloat(min(availableShares.count, 4)) * 36)
-                    .background(
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: Brand.radiusMedium))
+                    .overlay(
                         RoundedRectangle(cornerRadius: Brand.radiusMedium)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: Brand.radiusMedium)
-                                    .strokeBorder(Brand.primaryBorder, lineWidth: 1)
-                            )
+                            .strokeBorder(Brand.primaryBorder, lineWidth: 1)
                     )
                 }
             }

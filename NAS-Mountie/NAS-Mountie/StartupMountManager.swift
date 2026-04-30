@@ -2,405 +2,303 @@ import Foundation
 import Network
 
 final class StartupMountManager {
-
     private let defaults: UserDefaults
+
     private var networkMonitor: NWPathMonitor?
+    private var retryTimer: DispatchSourceTimer?
 
     private var hasMountedThisSession = false
-    private var retryCount = 0
     private var isAttemptInProgress = false
+    private var retryCount = 0
 
-    private let maxRetryCount = 60
-    private let retryDelay: TimeInterval = 3.0
+    // Single serialized queue. Eliminates the currentPathStatus data race.
+    private let workQueue = DispatchQueue(label: "com.nasmountie.startup.work", qos: .utility)
 
-    private let monitorQueue = DispatchQueue(
-        label: "com.nasmountie.startup.network-monitor",
-        qos: .utility
-    )
-
-    private let startupQueue = DispatchQueue(
-        label: "com.nasmountie.startup.mount",
-        qos: .userInitiated
-    )
+    private let maxRetryCount: Int = 30       // 30s de ventana total
+    private let retryInterval: TimeInterval = 1.0
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    // MARK: - Public
+    // MARK: - Public API
 
     func scheduleStartupMountIfNeeded() {
-        StartupLogger.log("scheduleStartupMountIfNeeded called", source: "StartupMountManager")
-
         guard shouldAttemptStartupMount else {
-            StartupLogger.log(
-                "Startup mount skipped. runOnStartup disabled or already mounted this session.",
-                source: "StartupMountManager"
-            )
+            log("runOnStartup is off or session already mounted. Skipping.")
             return
         }
-
-        StartupLogger.log(
-            "Startup mount allowed. Starting repeated attempts every \(retryDelay)s, max \(maxRetryCount) attempts.",
-            source: "StartupMountManager"
-        )
-
+        log("scheduleStartupMountIfNeeded: authorized. Starting network monitor.")
         startNetworkMonitor()
-
-        startupQueue.async {
-            self.attemptMountWithRetry()
-        }
     }
 
     func resetSessionState() {
-        StartupLogger.log("Resetting startup mount session state.", source: "StartupMountManager")
-
-        hasMountedThisSession = false
-        retryCount = 0
-        isAttemptInProgress = false
-        stopMonitor()
+        defaults.removeObject(forKey: "_sessionMountDone")
+        workQueue.async { [weak self] in self?.stop() }
     }
 
-    // MARK: - Private
+    // MARK: - Private: Guards
 
     private var shouldAttemptStartupMount: Bool {
-        defaults.bool(forKey: "runOnStartup") && !hasMountedThisSession
+        defaults.bool(forKey: "runOnStartup")
+            && !defaults.bool(forKey: "_sessionMountDone")
     }
 
+    // MARK: - Private: Network Monitor
+
     private func startNetworkMonitor() {
-        stopMonitor()
-
-        StartupLogger.log("Starting NWPathMonitor.", source: "StartupMountManager")
-
         let monitor = NWPathMonitor()
         networkMonitor = monitor
 
+        // pathUpdateHandler and timer both run on the same serialized workQueue.
+        // No shared property across queues — data race eliminated.
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self else { return }
-
-            StartupLogger.log(
-                "Network path status changed: \(path.status)",
-                source: "StartupMountManager"
-            )
-
-            guard path.status == .satisfied else {
-                return
-            }
-
-            guard !self.hasMountedThisSession else {
-                StartupLogger.log(
-                    "Network satisfied, but startup mount already completed this session.",
-                    source: "StartupMountManager"
-                )
-                return
-            }
-
-            self.startupQueue.async {
-                StartupLogger.log(
-                    "Network satisfied. Triggering immediate mount attempt.",
-                    source: "StartupMountManager"
-                )
-
-                self.attemptMountWithRetry()
+            if path.status == .satisfied {
+                // FIX: only start the timer if it does not exist yet AND we have not mounted.
+                // This prevents the duplicate timer seen in the log after a successful mount.
+                guard !self.hasMountedThisSession else { return }
+                self.startRetryTimer()
+            } else {
+                log("Network path not satisfied (\(path.status)). Waiting.")
             }
         }
 
-        monitor.start(queue: monitorQueue)
+        monitor.start(queue: workQueue)
     }
 
-    private func stopMonitor() {
-        networkMonitor?.cancel()
-        networkMonitor = nil
+    // MARK: - Private: Retry Timer
+
+    private func startRetryTimer() {
+        // Siempre corre en workQueue. El guard evita timer duplicado.
+        guard retryTimer == nil else { return }
+
+        log("Starting retry timer: every \(retryInterval)s, max \(maxRetryCount) attempts.")
+
+        let timer = DispatchSource.makeTimerSource(queue: workQueue)
+        timer.schedule(deadline: .now(), repeating: retryInterval)
+        timer.setEventHandler { [weak self] in self?.attemptStartupMount() }
+        retryTimer = timer
+        timer.resume()
     }
 
-    // MARK: - Retry flow
+    // MARK: - Private: Attempt
 
-    private func attemptMountWithRetry() {
+    private func attemptStartupMount() {
+        // Corre en workQueue. Sin concurrencia, sin necesidad de locks.
         guard shouldAttemptStartupMount else {
-            StartupLogger.log(
-                "Retry stopped. shouldAttemptStartupMount is false.",
-                source: "StartupMountManager"
-            )
+            log("Guard: shouldAttemptStartupMount = false. Stopping.")
+            stop()
             return
         }
-
+        guard !hasMountedThisSession else {
+            log("Guard: already mounted this session. Stopping.")
+            stop()
+            return
+        }
         guard !isAttemptInProgress else {
-            StartupLogger.log(
-                "Attempt skipped. Another startup mount attempt is already in progress.",
-                source: "StartupMountManager"
-            )
+            log("Guard: attempt already in progress. Skipping tick.")
             return
         }
 
         retryCount += 1
+        log("Attempt #\(retryCount) of \(maxRetryCount).")
 
-        StartupLogger.log(
-            "Startup mount attempt #\(retryCount) of \(maxRetryCount).",
-            source: "StartupMountManager"
-        )
-
-        guard retryCount <= maxRetryCount else {
-            StartupLogger.log(
-                "Max retry count reached. Startup automount stopped.",
-                source: "StartupMountManager"
-            )
-
-            StartupNotificationHelper.notify(
-                title: "NAS-Mountie couldn't auto-mount shares",
-                body: "Open NAS-Mountie to check your network connection or saved credentials."
-            )
-
+        if retryCount > maxRetryCount {
+            log("Max retries reached. Giving up.")
+            stop()
             return
         }
 
         isAttemptInProgress = true
+        defer { isAttemptInProgress = false }
 
-        let didMount = attemptMount()
-
-        isAttemptInProgress = false
-
-        if didMount {
-            hasMountedThisSession = true
-            stopMonitor()
-
-            StartupLogger.log(
-                "Startup automount completed successfully.",
-                source: "StartupMountManager"
-            )
-
-            return
-        }
-
-        guard retryCount < maxRetryCount else {
-            StartupLogger.log(
-                "Startup mount attempt failed. No retries left.",
-                source: "StartupMountManager"
-            )
-
-            StartupNotificationHelper.notify(
-                title: "NAS-Mountie couldn't auto-mount shares",
-                body: "Open NAS-Mountie to check your network connection or saved credentials."
-            )
-
-            return
-        }
-
-        StartupLogger.log(
-            "Startup mount attempt failed. Retrying in \(retryDelay)s.",
-            source: "StartupMountManager"
-        )
-
-        startupQueue.asyncAfter(deadline: .now() + retryDelay) {
-            self.attemptMountWithRetry()
-        }
-    }
-
-    // MARK: - Mount strategy
-
-    @discardableResult
-    private func attemptMount() -> Bool {
-        let profiles = NetworkProfileManager.loadProfiles()
-
-        guard !profiles.isEmpty else {
-            StartupLogger.log(
-                "No saved network profiles available.",
-                source: "StartupMountManager"
-            )
-            return false
-        }
-
-        let profilesToTry = prioritizedProfiles(from: profiles)
-
-        StartupLogger.log(
-            "Profiles to try: \(profilesToTry.map { $0.ssid }.joined(separator: ", "))",
-            source: "StartupMountManager"
-        )
-
-        for profile in profilesToTry {
-            if attemptMount(profile: profile) {
-                return true
+        // ── Paso 1: perfil por SSID actual ───────────────────────────────────
+        if let ssid = NetworkHelper.currentSSID() {
+            log("SSID detected: '\(ssid)'.")
+            if let profile = NetworkProfileManager.profile(for: ssid) {
+                log("Profile matched by SSID. Host: \(profile.host). Shares: \(profile.shares.joined(separator: ", ")).")
+                tryMount(profile: profile)
+                return
+            } else {
+                log("No saved profile for SSID '\(ssid)'. Trying host fallback.")
             }
-        }
-
-        return false
-    }
-
-    private func prioritizedProfiles(from profiles: [String: NetworkProfile]) -> [NetworkProfile] {
-        StartupLogger.log(
-            "Reading current SSID using fast CoreWLAN path.",
-            source: "StartupMountManager"
-        )
-
-        if let ssid = NetworkHelper.currentSSIDFast() {
-            StartupLogger.log("Current SSID from fast path: \(ssid)", source: "StartupMountManager")
-
-            if let currentProfile = profiles[ssid] {
-                let otherProfiles = profiles
-                    .values
-                    .filter { $0.ssid != ssid }
-                    .sorted {
-                        $0.ssid.localizedCaseInsensitiveCompare($1.ssid) == .orderedAscending
-                    }
-
-                return [currentProfile] + otherProfiles
-            }
-
-            StartupLogger.log(
-                "No saved profile matched current SSID: \(ssid). Will try saved profiles by reachable host.",
-                source: "StartupMountManager"
-            )
         } else {
-            StartupLogger.log(
-                "Current SSID not available from fast path. Will try saved profiles by reachable host.",
-                source: "StartupMountManager"
-            )
+            log("SSID not available yet. Trying host fallback.")
         }
 
-        return profiles
-            .values
-            .sorted {
-                $0.ssid.localizedCaseInsensitiveCompare($1.ssid) == .orderedAscending
+        // ── Paso 2: fallback por host alcanzable ─────────────────────────────
+        // FIX: nc has a 1s timeout per host. With few profiles this is fast.
+        // If the NAS is not reachable yet, the attempt finishes in <1s and the
+        // timer retries on the next tick — without blocking the flow.
+        let allProfiles = NetworkProfileManager.loadProfiles()
+
+        guard !allProfiles.isEmpty else {
+            log("No saved profiles. Stopping.")
+            stop()
+            return
+        }
+
+        log("Fallback: testing \(allProfiles.count) profile(s): \(allProfiles.keys.sorted().joined(separator: ", ")).")
+
+        for (ssid, profile) in allProfiles {
+            guard let host = parsedHost(from: profile.host) else {
+                log("Cannot parse host for profile '\(ssid)'. Skipping.")
+                continue
             }
+            guard !profile.shares.isEmpty else {
+                log("Profile '\(ssid)' has no shares. Skipping.")
+                continue
+            }
+            log("Testing port 445 on \(host) (profile '\(ssid)').")
+            if isSMBPortReachable(host: host) {
+                log("Port 445 reachable on \(host). Mounting via profile '\(ssid)'.")
+                tryMount(profile: profile)
+                return
+            } else {
+                log("Port 445 not reachable on \(host) yet.")
+            }
+        }
+
+        log("No reachable host this attempt. Will retry.")
     }
 
-    private func attemptMount(profile: NetworkProfile) -> Bool {
-        StartupLogger.log(
-            "Trying profile: \(profile.ssid). Host: \(profile.host). Shares: \(profile.shares.joined(separator: ", "))",
-            source: "StartupMountManager"
-        )
+    // MARK: - Private: tryMount
 
-        guard !profile.shares.isEmpty else {
-            StartupLogger.log(
-                "Profile \(profile.ssid) has no saved shares.",
-                source: "StartupMountManager"
-            )
-            return false
-        }
-
+    private func tryMount(profile: NetworkProfile) {
         guard let credentials = KeychainHelper.load() else {
-            StartupLogger.log(
-                "Keychain credentials not available.",
-                source: "StartupMountManager"
-            )
-            return false
+            log("Keychain credentials not found. Stopping.")
+            stop()
+            return
         }
-
         guard let host = parsedHost(from: profile.host) else {
-            StartupLogger.log(
-                "Could not parse host from profile host: \(profile.host)",
-                source: "StartupMountManager"
-            )
-            return false
+            log("Cannot parse host '\(profile.host)'. Stopping.")
+            stop()
+            return
+        }
+        guard !profile.shares.isEmpty else {
+            log("Profile has no shares. Stopping.")
+            stop()
+            return
         }
 
-        StartupLogger.log(
-            "Checking SMB port 445 for profile \(profile.ssid), host: \(host).",
-            source: "StartupMountManager"
-        )
+        // Mark as mounted and stop the timer BEFORE launching the mount.
+        // This prevents NWPathMonitor (which may receive a new path event
+        // when the SMB volume mounts) from starting a second timer.
+        hasMountedThisSession = true
+        defaults.set(true, forKey: "_sessionMountDone")
+        stop()
 
-        guard isSMBPortReachable(host: host) else {
-            StartupLogger.log(
-                "SMB port not reachable for profile \(profile.ssid), host: \(host).",
-                source: "StartupMountManager"
-            )
-            return false
+        log("Launching mount for \(profile.shares.count) share(s) on \(host).")
+
+        let sharesCopy   = profile.shares
+        let usernameCopy = profile.username
+        let passwordCopy = credentials.password
+
+        // mount() is blocking (waits for osascript). Launch on background
+        // to avoid blocking workQueue.
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.mount(host: host, username: usernameCopy,
+                        password: passwordCopy, shares: sharesCopy)
         }
-
-        StartupLogger.log(
-            "SMB port reachable for profile \(profile.ssid). Mounting shares.",
-            source: "StartupMountManager"
-        )
-
-        mount(
-            host: host,
-            username: profile.username,
-            password: credentials.password,
-            shares: profile.shares
-        )
-
-        return true
     }
 
-    private func mount(
-        host: String,
-        username: String,
-        password: String,
-        shares: [String]
-    ) {
-        StartupLogger.log(
-            "Mount requested for shares using open: \(shares.joined(separator: ", "))",
-            source: "StartupMountManager"
-        )
+    // MARK: - Private: Mount
 
-        let encodedUser =
-            username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
-            ?? username
+    /// Mounts shares silently via osascript/Finder.
+    /// - Does not open Finder windows.
+    /// - Does not show native macOS connection dialogs.
+    /// - Single script for all shares = one osascript invocation.
+    /// - Script passed via stdin: safe with special-character passwords,
+    ///   not visible in `ps aux`.
+    private func mount(host: String, username: String, password: String, shares: [String]) {
+        let encodedUser = username.addingPercentEncoding(withAllowedCharacters: .urlUserAllowed)
+                          ?? username
+        let encodedPass = password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed)
+                          ?? password
 
-        let encodedPass =
-            password.addingPercentEncoding(withAllowedCharacters: .urlPasswordAllowed)
-            ?? password
+        let mountLines = shares.map { share in
+            let url = "smb://\(encodedUser):\(encodedPass)@\(host)/\(share)"
+            return """
+                try
+                    mount volume "\(url)"
+                on error errMsg
+                end try
+            """
+        }.joined(separator: "\n")
 
-        for share in shares {
-            let fullURL = "smb://\(encodedUser):\(encodedPass)@\(host)/\(share)"
+        let script = """
+        tell application "Finder"
+        \(mountLines)
+        end tell
+        """
 
-            StartupLogger.log(
-                "Opening SMB URL for share: \(share)",
-                source: "StartupMountManager"
-            )
-
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = [fullURL]
-
-            do {
-                try process.run()
-
-                StartupLogger.log(
-                    "open command launched for share: \(share)",
-                    source: "StartupMountManager"
-                )
-            } catch {
-                StartupLogger.log(
-                    "open command failed for share \(share): \(error.localizedDescription)",
-                    source: "StartupMountManager"
-                )
-            }
-        }
-
-        StartupLogger.log("Mount flow dispatched.", source: "StartupMountManager")
-    }
-
-    // MARK: - Helpers
-
-    private func isSMBPortReachable(host: String) -> Bool {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
-        process.arguments = ["-z", "-G", "1", host, "445"]
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-"]   // read script from stdin
+
+        let inputPipe  = Pipe()
+        let outputPipe = Pipe()
+        let errorPipe  = Pipe()
+        process.standardInput  = inputPipe
+        process.standardOutput = outputPipe
+        process.standardError  = errorPipe
 
         do {
             try process.run()
+            if let data = script.data(using: .utf8) {
+                inputPipe.fileHandleForWriting.write(data)
+            }
+            inputPipe.fileHandleForWriting.closeFile()
             process.waitUntilExit()
 
+            let code = process.terminationStatus
+            log("osascript finished. Exit code: \(code). Shares: \(shares.joined(separator: ", ")).")
+
+            if code != 0 {
+                let errData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                let errMsg  = String(data: errData, encoding: .utf8) ?? "(no stderr)"
+                log("osascript stderr: \(errMsg)")
+            }
+        } catch {
+            log("Failed to launch osascript: \(error.localizedDescription).")
+        }
+    }
+
+    // MARK: - Private: Helpers
+
+    private func isSMBPortReachable(host: String, timeout: Int = 1) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
+        process.arguments = ["-z", "-G", "\(timeout)", host, "445"]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError  = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
             return process.terminationStatus == 0
         } catch {
-            StartupLogger.log(
-                "SMB port check failed with error: \(error.localizedDescription)",
-                source: "StartupMountManager"
-            )
             return false
         }
     }
 
     private func parsedHost(from rawHost: String) -> String? {
-        let trimmed = rawHost.trimmingCharacters(in: .whitespacesAndNewlines)
-        let withScheme = trimmed.lowercased().hasPrefix("smb://")
-            ? trimmed
-            : "smb://\(trimmed)"
-
-        guard let host = URL(string: withScheme)?.host, !host.isEmpty else {
-            return nil
-        }
-
+        let trimmed    = rawHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        let withScheme = trimmed.lowercased().hasPrefix("smb://") ? trimmed : "smb://\(trimmed)"
+        guard let host = URL(string: withScheme)?.host, !host.isEmpty else { return nil }
         return host
+    }
+
+    private func stop() {
+        retryTimer?.cancel()
+        retryTimer = nil
+        networkMonitor?.cancel()
+        networkMonitor = nil
+    }
+
+    // MARK: - Private: Logging
+
+    private func log(_ message: String) {
+        StartupLogger.log(message, source: "StartupMountManager")
     }
 }

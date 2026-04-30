@@ -8,7 +8,7 @@ enum Brand {
     // MARK: Colors
     /// Forest Green #2E6A4F — primary action color
     static let primary      = Color(hex: "#2E6A4F")
-    static let primaryLight = Color(hex: "#2E6A4F").opacity(0.12)
+    static let primaryLight = Color(hex: "#E6EDEA")
     static let primaryBorder = Color(hex: "#2E6A4F").opacity(0.35)
 
     /// Charcoal #1D2023 — used for dark backgrounds if needed
