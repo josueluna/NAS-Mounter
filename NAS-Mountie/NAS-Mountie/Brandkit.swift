@@ -8,8 +8,25 @@ enum Brand {
     // MARK: Colors
     /// Forest Green #2E6A4F — primary action color
     static let primary      = Color(hex: "#2E6A4F")
-    static let primaryLight = Color(hex: "#E6EDEA")
-    static let primaryBorder = Color(hex: "#2E6A4F").opacity(0.35)
+
+    /// Adaptive tint for selected/mounted share rows.
+    /// Light mode: soft green #E6EDEA  |  Dark mode: deep forest #1A3D2B
+    static let primaryLight = Color(
+        NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 0.10, green: 0.24, blue: 0.17, alpha: 1) // #1A3D2B
+                : NSColor(red: 0.90, green: 0.93, blue: 0.92, alpha: 1) // #E6EDEA
+        }
+    )
+
+    /// Adaptive border tint — keeps contrast in both modes.
+    static let primaryBorder = Color(
+        NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(red: 0.18, green: 0.42, blue: 0.31, alpha: 0.6) // brighter in dark
+                : NSColor(red: 0.18, green: 0.42, blue: 0.31, alpha: 0.35)
+        }
+    )
 
     /// Charcoal #1D2023 — used for dark backgrounds if needed
     static let charcoal     = Color(hex: "#1D2023")

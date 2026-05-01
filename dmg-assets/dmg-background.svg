@@ -1,0 +1,26 @@
+<svg width="1320" height="760" viewBox="0 0 1320 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="2" fill="#2E6A4F" opacity="0.18"/>
+    </pattern>
+    <pattern id="cross" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+      <circle cx="40" cy="40" r="3.5" fill="#2E6A4F" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <!-- Base: off-white brand color -->
+  <rect width="1320" height="760" fill="#F5F2EB"/>
+
+  <!-- Subtle green dot grid -->
+  <rect width="1320" height="760" fill="url(#dots)"/>
+
+  <!-- Larger accent dots -->
+  <rect width="1320" height="760" fill="url(#cross)"/>
+
+  <!-- Top green accent bar -->
+  <rect x="0" y="0" width="1320" height="6" fill="#2E6A4F"/>
+
+  <!-- Bottom green accent bar -->
+  <rect x="0" y="754" width="1320" height="6" fill="#2E6A4F" opacity="0.3"/>
+
+</svg>
